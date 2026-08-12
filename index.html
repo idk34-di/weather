@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>METEO MULTI</title>
+<style>
+:root{
+  --bg:#0a0e14; --panel:#131820; --panel2:#0d1117; --border:#2a323d;
+  --text:#c8dce8; --dim:#7a8a99; --accent:#4fd1c5; --accent2:#5aa9e6;
+  --good:#4fd17c; --warn:#e6c15a; --bad:#e65a5a; --extreme:#b25ae6;
+}
+[data-theme="light"]{
+  --bg:#eef2f5; --panel:#ffffff; --panel2:#f4f7f9; --border:#d3dbe0;
+  --text:#1c2733; --dim:#5a6b78; --accent:#0d8f83; --accent2:#1c6fb0;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Courier New',ui-monospace,monospace;transition:.2s;}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--panel2);position:sticky;top:0;z-index:10;}
+header h1{font-size:14px;letter-spacing:2px;margin:0;color:var(--accent);}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:8px 12px;background:var(--panel2);border-bottom:1px solid var(--border);}
+nav button{background:none;border:1px solid var(--border);color:var(--dim);padding:6px 10px;font-size:11px;letter-spacing:1px;cursor:pointer;font-family:inherit;text-transform:uppercase;}
+nav button.active{color:var(--bg);background:var(--accent);border-color:var(--accent);}
+#themeBtn{background:none;border:1px solid var(--border);color:var(--text);padding:5px 9px;font-size:11px;cursor:pointer;font-family:inherit;}
+main{padding:12px;max-width:900px;margin:0 auto;}
+.panel{display:none;}
+.panel.active{display:block;}
+.card{background:var(--panel);border:1px solid var(--border);padding:12px;margin-bottom:10px;border-radius:2px;}
+.card h3{margin:0 0 8px;font-size:11px;letter-spacing:1.5px;color:var(--accent2);text-transform:uppercase;}
+.row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;}
+input[type=text]{flex:1;min-width:140px;background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:8px;font-family:inherit;font-size:13px;}
+button.act{background:var(--accent);border:none;color:var(--bg);padding:8px 12px;font-family:inherit;font-size:11px;letter-spacing:1px;cursor:pointer;text-transform:uppercase;}
+button.act.secondary{background:none;border:1px solid var(--accent2);color:var(--accent2);}
+#geoResults div{padding:6px 8px;border:1px solid var(--border);margin-bottom:4px;cursor:pointer;font-size:12px;}
+#geoResults div:hover{border-color:var(--accent);}
+.big{font-size:34px;color:var(--accent);}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;}
+.stat{background:var(--panel2);border:1px solid var(--border);padding:8px;text-align:center;}
+.stat .v{font-size:16px;color:var(--text);}
+.stat .l{font-size:9px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+table{width:100%;border-collapse:collapse;font-size:11px;}
+th,td{border:1px solid var(--border);padding:5px 6px;text-align:center;}
+th{background:var(--panel2);color:var(--accent2);font-weight:normal;text-transform:uppercase;font-size:10px;}
+tr.media{background:var(--panel2);font-weight:bold;color:var(--accent);}
+.badge{display:inline-block;padding:2px 8px;font-size:10px;border-radius:2px;letter-spacing:.5px;}
+.b-good{background:var(--good);color:#00230f;}
+.b-warn{background:var(--warn);color:#231d00;}
+.b-bad{background:var(--bad);color:#2b0000;}
+.b-extreme{background:var(--extreme);color:#1c0023;}
+.dim{color:var(--dim);font-size:11px;}
+.mapbtns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.mapbtns button{background:none;border:1px solid var(--border);color:var(--dim);padding:6px 10px;font-size:10px;cursor:pointer;font-family:inherit;text-transform:uppercase;}
+.mapbtns button.active{background:var(--accent2);color:var(--bg);border-color:var(--accent2);}
+iframe{width:100%;height:420px;border:1px solid var(--border);}
+.moonWrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.moonEmoji{font-size:60px;}
+footer{text-align:center;color:var(--dim);font-size:10px;padding:16px;}
+#locName{color:var(--accent);font-size:12px;margin:4px 0 0;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>☁ METEO MULTI</h1>
+  <button id="themeBtn" onclick="toggleTheme()">THEME</button>
+</header>
+
+<nav id="tabs">
+  <button data-tab="meteo" class="active">Meteo</button>
+  <button data-tab="aria">Aria</button>
+  <button data-tab="uv">UV &amp; Vis</button>
+  <button data-tab="luna">Luna</button>
+  <button data-tab="onde">Onde</button>
+  <button data-tab="mappe">Mappe</button>
+</nav>
+
+<main>
+
+  <div class="card">
+    <div class="row">
+      <input type="text" id="cityInput" placeholder="Cerca città...">
+      <button class="act" onclick="searchCity()">Cerca</button>
+      <button class="act secondary" onclick="useGeo()">📍 Posizione</button>
+    </div>
+    <div id="geoResults"></div>
+    <p id="locName">Nessuna località selezionata</p>
+  </div>
+
+  <div id="panel-meteo" class="panel active">
+    <div class="card" id="headlineCard" style="display:none">
+      <h3>Condizioni attuali (modello best-match)</h3>
+      <div class="row" style="align-items:center">
+        <div class="big" id="hTemp">--°</div>
+        <div class="dim" id="hDesc">-</div>
+      </div>
+      <div class="grid">
+        <div class="stat"><div class="v" id="hHum">--%</div><div class="l">Umidità</div></div>
+        <div class="stat"><div class="v" id="hPres">-- hPa</div><div class="l">Pressione</div></div>
+        <div class="stat"><div class="v" id="hWind">-- km/h</div><div class="l">Vento</div></div>
+        <div class="stat"><div class="v" id="hGust">-- km/h</div><div class="l">Raffiche</div></div>
+        <div class="stat"><div class="v" id="hCloud">--%</div><div class="l">Nuvole</div></div>
+      </div>
+    </div>
+    <div class="card" id="compareCard" style="display:none">
+      <h3>Confronto tra fonti meteo (ora attuale)</h3>
+      <p class="dim">Più i modelli concordano, più la previsione è affidabile.</p>
+      <div style="overflow-x:auto"><table id="compareTable"></table></div>
+    </div>
+  </div>
+
+  <div id="panel-aria" class="panel">
+    <div class="card" id="ariaCard" style="display:none">
+      <h3>Qualità dell'aria</h3>
+      <div class="grid">
+        <div class="stat"><div class="v" id="aqiEU">--</div><div class="l">AQI Europeo</div></div>
+        <div class="stat"><div class="v" id="aqiUS">--</div><div class="l">AQI USA</div></div>
+        <div class="stat"><div class="v" id="pm25">-- µg/m³</div><div class="l">PM2.5</div></div>
+        <div class="stat"><div class="v" id="pm10">-- µg/m³</div><div class="l">PM10</div></div>
+        <div class="stat"><div class="v" id="ozone">-- µg/m³</div><div class="l">Ozono</div></div>
+        <div class="stat"><div class="v" id="no2">-- µg/m³</div><div class="l">NO₂</div></div>
+      </div>
+      <p style="margin-top:10px" id="aqiBadge"></p>
+    </div>
+  </div>
+
+  <div id="panel-uv" class="panel">
+    <div class="card" id="uvCard" style="display:none">
+      <h3>Indice UV</h3>
+      <div class="row" style="align-items:center">
+        <div class="big" id="uvVal">--</div>
+        <div id="uvBadge"></div>
+      </div>
+      <p class="dim" id="uvAdvice"></p>
+    </div>
+    <div class="card" id="visCard" style="display:none">
+      <h3>Visibilità orizzontale</h3>
+      <div class="row" style="align-items:center">
+        <div class="big" id="visVal">-- km</div>
+        <div id="visBadge"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-luna" class="panel">
+    <div class="card" id="moonCard" style="display:none">
+      <h3>Fase lunare &amp; visibilità</h3>
+      <div class="moonWrap">
+        <div class="moonEmoji" id="moonEmoji">🌑</div>
+        <div>
+          <div class="v" id="moonPhaseName" style="font-size:16px">-</div>
+          <div class="dim" id="moonIllum">Illuminazione: --%</div>
+          <div class="dim" id="moonVis">Visibilità stanotte: --</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-onde" class="panel">
+    <div class="card" id="waveCard" style="display:none">
+      <h3>Stato del mare</h3>
+      <div id="waveContent" class="grid"></div>
+    </div>
+  </div>
+
+  <div id="panel-mappe" class="panel">
+    <div class="card">
+      <h3>Mappe live</h3>
+      <div class="mapbtns" id="mapBtns">
+        <button data-ov="rain" class="active">Pioggia/Radar</button>
+        <button data-ov="wind">Vento</button>
+        <button data-ov="temp">Temperatura</button>
+        <button data-ov="pressure">Pressione</button>
+        <button data-ov="rh">Umidità</button>
+        <button data-ov="waves">Onde</button>
+        <button data-ov="pm2p5">Qualità aria (PM2.5)</button>
+      </div>
+      <iframe id="mapFrame" src="" frameborder="0"></iframe>
+      <p class="dim">Mappe fornite da Windy.com (embed pubblico).</p>
+    </div>
+  </div>
+
+</main>
+<footer>© 2026 Ismaele — Dati: Open-Meteo (open-meteo.com), Windy.com. Non sostituisce fonti ufficiali per decisioni di sicurezza.</footer>
+
+<script>
+let LAT=null, LON=null, LOCNAME='';
+const MODELS=[
+  {id:'ecmwf_ifs025',label:'ECMWF (EU)'},
+  {id:'gfs_seamless',label:'GFS (NOAA)'},
+  {id:'icon_seamless',label:'ICON (DWD)'},
+  {id:'gem_seamless',label:'GEM (CA)'},
+  {id:'meteofrance_seamless',label:'Météo-Fr'},
+  {id:'jma_seamless',label:'JMA (JP)'}
+];
+
+document.getElementById('tabs').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON')return;
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+e.target.dataset.tab).classList.add('active');
+});
+
+function toggleTheme(){
+  const html=document.documentElement;
+  html.setAttribute('data-theme', html.getAttribute('data-theme')==='light'?'':'light');
+}
+
+async function searchCity(){
+  const q=document.getElementById('cityInput').value.trim();
+  if(!q)return;
+  const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=5&language=it&format=json`);
+  const d=await r.json();
+  const box=document.getElementById('geoResults');
+  box.innerHTML='';
+  if(!d.results){box.innerHTML='<p class="dim">Nessun risultato.</p>';return;}
+  d.results.forEach(res=>{
+    const div=document.createElement('div');
+    div.textContent=`${res.name}${res.admin1?', '+res.admin1:''}, ${res.country}`;
+    div.onclick=()=>{selectLocation(res.latitude,res.longitude,`${res.name}, ${res.country}`);box.innerHTML='';};
+    box.appendChild(div);
+  });
+}
+
+function useGeo(){
+  if(!navigator.geolocation){alert('Geolocalizzazione non supportata');return;}
+  navigator.geolocation.getCurrentPosition(pos=>{
+    selectLocation(pos.coords.latitude,pos.coords.longitude,'La mia posizione');
+  },()=>alert('Permesso negato o posizione non disponibile'));
+}
+
+function selectLocation(lat,lon,name){
+  LAT=lat;LON=lon;LOCNAME=name;
+  document.getElementById('locName').textContent=`📍 ${name} (${lat.toFixed(2)}, ${lon.toFixed(2)})`;
+  loadAll();
+}
+
+async function loadAll(){
+  loadMeteo();
+  loadAria();
+  loadOnde();
+  loadLuna();
+  updateMap();
+}
+
+function compassDir(deg){
+  const dirs=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+  return dirs[Math.round(deg/22.5)%16];
+}
+
+function nearestIndex(times, target){
+  let best=0,bd=Infinity;
+  times.forEach((t,i)=>{
+    const d=Math.abs(new Date(t)-new Date(target));
+    if(d<bd){bd=d;best=i;}
+  });
+  return best;
+}
+
+async function loadMeteo(){
+  const models=MODELS.map(m=>m.id).join(',');
+  const url=`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,apparent_temperature,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cloud_cover,weather_code&hourly=temperature_2m,relative_humidity_2m,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index,visibility,cloud_cover&models=${models}&timezone=auto&forecast_days=2`;
+  const d=await (await fetch(url)).json();
+
+  document.getElementById('headlineCard').style.display='block';
+  document.getElementById('hTemp').textContent=Math.round(d.current.temperature_2m)+'°C';
+  document.getElementById('hDesc').textContent=`Percepita ${Math.round(d.current.apparent_temperature)}°C`;
+  document.getElementById('hHum').textContent=d.current.relative_humidity_2m+'%';
+  document.getElementById('hPres').textContent=Math.round(d.current.pressure_msl)+' hPa';
+  document.getElementById('hWind').textContent=Math.round(d.current.wind_speed_10m)+' km/h '+compassDir(d.current.wind_direction_10m);
+  document.getElementById('hGust').textContent=Math.round(d.current.wind_gusts_10m)+' km/h';
+  document.getElementById('hCloud').textContent=d.current.cloud_cover+'%';
+
+  const idx=nearestIndex(d.hourly.time, d.current.time);
+  const vars=[
+    {key:'temperature_2m',label:'Temperatura',unit:'°C',round:1},
+    {key:'relative_humidity_2m',label:'Umidità',unit:'%',round:0},
+    {key:'pressure_msl',label:'Pressione',unit:'hPa',round:0},
+    {key:'wind_speed_10m',label:'Vento',unit:'km/h',round:0},
+    {key:'wind_gusts_10m',label:'Raffiche',unit:'km/h',round:0},
+    {key:'cloud_cover',label:'Nuvole',unit:'%',round:0}
+  ];
+  let html='<tr><th>Variabile</th>';
+  MODELS.forEach(m=>html+=`<th>${m.label}</th>`);
+  html+='<th>Media</th></tr>';
+  vars.forEach(v=>{
+    html+=`<tr><td style="text-align:left"><b>${v.label}</b> (${v.unit})</td>`;
+    let sum=0,count=0;
+    MODELS.forEach(m=>{
+      const arr=d.hourly[`${v.key}_${m.id}`];
+      const val=arr?arr[idx]:null;
+      if(val!==null&&val!==undefined){sum+=val;count++;}
+      html+=`<td>${val!==null&&val!==undefined?val.toFixed(v.round):'—'}</td>`;
+    });
+    html+=`</tr>`;
+  });
+  document.getElementById('compareTable').innerHTML=html;
+  document.getElementById('compareCard').style.display='block';
+
+  // UV & Visibility (use best_match-adjacent: average across models)
+  let uvSum=0,uvC=0,visSum=0,visC=0;
+  MODELS.forEach(m=>{
+    const uvArr=d.hourly[`uv_index_${m.id}`], visArr=d.hourly[`visibility_${m.id}`];
+    if(uvArr&&uvArr[idx]!=null){uvSum+=uvArr[idx];uvC++;}
+    if(visArr&&visArr[idx]!=null){visSum+=visArr[idx];visC++;}
+  });
+  const uvAvg=uvC?uvSum/uvC:null;
+  const visAvg=visC?visSum/visC:null;
+  renderUV(uvAvg);
+  renderVis(visAvg);
+  window.__cloudCover = d.current.cloud_cover;
+}
+
+function renderUV(uv){
+  if(uv==null)return;
+  document.getElementById('uvCard').style.display='block';
+  document.getElementById('uvVal').textContent=uv.toFixed(1);
+  let cls='b-good',label='Basso',advice='Nessuna protezione necessaria per esposizioni brevi.';
+  if(uv>=11){cls='b-extreme';label='Estremo';advice='Evitare il sole nelle ore centrali, protezione massima.';}
+  else if(uv>=8){cls='b-bad';label='Molto alto';advice='Protezione solare alta consigliata, evitare mezzogiorno.';}
+  else if(uv>=6){cls='b-bad';label='Alto';advice='Crema solare, occhiali e cappello consigliati.';}
+  else if(uv>=3){cls='b-warn';label='Moderato';advice='Protezione consigliata nelle ore centrali.';}
+  document.getElementById('uvBadge').innerHTML=`<span class="badge ${cls}">${label}</span>`;
+  document.getElementById('uvAdvice').textContent=advice;
+}
+
+function renderVis(visM){
+  if(visM==null)return;
+  document.getElementById('visCard').style.display='block';
+  const km=visM/1000;
+  document.getElementById('visVal').textContent=km.toFixed(1)+' km';
+  let cls='b-good',label='Ottima';
+  if(km<0.2){cls='b-extreme';label='Nebbia fitta';}
+  else if(km<1){cls='b-bad';label='Scarsa';}
+  else if(km<4){cls='b-warn';label='Moderata';}
+  else if(km<10){cls='b-good';label='Buona';}
+  document.getElementById('visBadge').innerHTML=`<span class="badge ${cls}">${label}</span>`;
+}
+
+async function loadAria(){
+  const url=`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${LAT}&longitude=${LON}&current=european_aqi,us_aqi,pm10,pm2_5,ozone,nitrogen_dioxide&timezone=auto`;
+  try{
+    const d=await (await fetch(url)).json();
+    const c=d.current;
+    document.getElementById('ariaCard').style.display='block';
+    document.getElementById('aqiEU').textContent=c.european_aqi ?? '--';
+    document.getElementById('aqiUS').textContent=c.us_aqi ?? '--';
+    document.getElementById('pm25').textContent=(c.pm2_5??'--')+' µg/m³';
+    document.getElementById('pm10').textContent=(c.pm10??'--')+' µg/m³';
+    document.getElementById('ozone').textContent=(c.ozone??'--')+' µg/m³';
+    document.getElementById('no2').textContent=(c.nitrogen_dioxide??'--')+' µg/m³';
+    const eu=c.european_aqi;
+    let cls='b-good',label='Buona';
+    if(eu>100){cls='b-extreme';label='Estremamente scarsa';}
+    else if(eu>=80){cls='b-bad';label='Molto scarsa';}
+    else if(eu>=60){cls='b-bad';label='Scarsa';}
+    else if(eu>=40){cls='b-warn';label='Moderata';}
+    else if(eu>=20){cls='b-warn';label='Discreta';}
+    document.getElementById('aqiBadge').innerHTML=`<span class="badge ${cls}">${label}</span>`;
+  }catch(e){}
+}
+
+async function loadOnde(){
+  const url=`https://marine-api.open-meteo.com/v1/marine?latitude=${LAT}&longitude=${LON}&current=wave_height,wave_direction,wave_period,swell_wave_height,swell_wave_period&timezone=auto`;
+  try{
+    const d=await (await fetch(url)).json();
+    const c=d.current;
+    const box=document.getElementById('waveContent');
+    if(!c||c.wave_height==null){
+      box.innerHTML='<p class="dim">Nessun dato marino disponibile: la località non è costiera.</p>';
+    }else{
+      box.innerHTML=`
+        <div class="stat"><div class="v">${c.wave_height} m</div><div class="l">Altezza onde</div></div>
+        <div class="stat"><div class="v">${c.wave_period} s</div><div class="l">Periodo</div></div>
+        <div class="stat"><div class="v">${compassDir(c.wave_direction||0)}</div><div class="l">Direzione</div></div>
+        <div class="stat"><div class="v">${c.swell_wave_height??'--'} m</div><div class="l">Mare lungo</div></div>`;
+    }
+    document.getElementById('waveCard').style.display='block';
+  }catch(e){
+    document.getElementById('waveCard').style.display='block';
+    document.getElementById('waveContent').innerHTML='<p class="dim">Dato non disponibile per questa località.</p>';
+  }
+}
+
+function loadLuna(){
+  const now=new Date();
+  let year=now.getFullYear(),month=now.getMonth()+1,day=now.getDate();
+  if(month<3){year--;month+=12;}
+  month++;
+  const c=365.25*year, e=30.6*month;
+  let jd=c+e+day-694039.09;
+  jd/=29.5305882;
+  const frac=jd-Math.floor(jd);
+  let b=Math.round(frac*8);
+  if(b>=8)b=0;
+  const names=['Luna Nuova','Luna Crescente','Primo Quarto','Gibbosa Crescente','Luna Piena','Gibbosa Calante','Ultimo Quarto','Luna Calante'];
+  const emojis=['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'];
+  const illum=(50*(1-Math.cos(2*Math.PI*frac))).toFixed(0);
+  document.getElementById('moonCard').style.display='block';
+  document.getElementById('moonEmoji').textContent=emojis[b];
+  document.getElementById('moonPhaseName').textContent=names[b];
+  document.getElementById('moonIllum').textContent=`Illuminazione: ${illum}%`;
+  const cloud=window.__cloudCover;
+  let visText='in attesa dati nuvolosità...';
+  if(cloud!=null){
+    if(cloud<20)visText='Ottima (cielo sereno)';
+    else if(cloud<50)visText='Buona (poche nuvole)';
+    else if(cloud<80)visText='Scarsa (cielo nuvoloso)';
+    else visText='Assente (cielo coperto)';
+  }
+  document.getElementById('moonVis').textContent=`Visibilità stanotte: ${visText}`;
+}
+
+document.getElementById('mapBtns').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON')return;
+  document.querySelectorAll('#mapBtns button').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  updateMap(e.target.dataset.ov);
+});
+
+function updateMap(overlay){
+  if(!LAT)return;
+  overlay=overlay||'rain';
+  document.getElementById('mapFrame').src=`https://embed.windy.com/embed2.html?lat=${LAT}&lon=${LON}&detailLat=${LAT}&detailLon=${LON}&width=650&height=450&zoom=7&level=surface&overlay=${overlay}&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1`;
+}
+
+// Default: Roma, se l'utente non sceglie nulla entro pochi secondi resta senza dati (nessun default forzato)
+</script>
+</body>
+</html>
+© 2026 Ismaele. All rights reserved. Created: 12-08-2026 | Last Update: 12-08-2026
