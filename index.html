@@ -3,73 +3,77 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>👾 WEATHER MULTI</title>
+<title>Weather Multi</title>
 <style>
 :root{
-  --bg:#0a0e14; --panel:#131820; --panel2:#0d1117; --border:#2a323d;
-  --text:#c8dce8; --dim:#7a8a99; --accent:#4fd1c5; --accent2:#5aa9e6;
-  --good:#4fd17c; --warn:#e6c15a; --bad:#e65a5a; --extreme:#b25ae6;
-}
-[data-theme="light"]{
-  --bg:#eef2f5; --panel:#ffffff; --panel2:#f4f7f9; --border:#d3dbe0;
-  --text:#1c2733; --dim:#5a6b78; --accent:#0d8f83; --accent2:#1c6fb0;
+  --bg:#e7edf3;
+  --swatchbar:#dee6ec;
+  --panel:#e8edf2;
+  --panel-border:#c3d1db;
+  --tab-bg:#eef2f6;
+  --tab-border:#b8c9d6;
+  --text:#3d5266;
+  --dim:#8398a8;
+  --accent:#4a7fa5;
+  --screen-bg:#0e1c27;
+  --screen-text:#6fd8ea;
+  --screen-dim:#3f5a66;
+  --good:#4fae6a; --warn:#d9a63c; --bad:#d9573f; --extreme:#9a5ac9;
 }
 *{box-sizing:border-box;}
-body{margin:0;background:var(--bg);color:var(--text);font-family:'Courier New',ui-monospace,monospace;transition:.2s;}
-header{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid var(--border);background:var(--panel2);}
-header .ver{font-size:10px;color:var(--dim);letter-spacing:1px;}
-header h1{font-size:13px;letter-spacing:2px;margin:0;color:var(--accent);}
-nav{display:flex;flex-wrap:wrap;gap:6px;padding:8px 12px;background:var(--panel2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;}
-nav button{background:none;border:1px solid var(--border);color:var(--dim);padding:6px 11px;font-size:11px;letter-spacing:1px;cursor:pointer;font-family:inherit;text-transform:uppercase;}
-nav button.active{color:var(--bg);background:var(--accent);border-color:var(--accent);}
-nav button.theme{color:var(--accent2);border-color:var(--accent2);}
-main{padding:12px;max-width:900px;margin:0 auto;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;}
+.swatches{display:flex;gap:12px;padding:18px 16px;background:var(--swatchbar);align-items:center;}
+.swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:3px solid transparent;}
+.swatch.sel{border-color:var(--text);}
+nav{display:flex;flex-wrap:wrap;gap:8px;padding:14px 16px;}
+nav button{background:var(--tab-bg);border:1.5px solid var(--tab-border);color:var(--text);padding:12px 14px;font-size:12px;letter-spacing:2px;font-weight:600;cursor:pointer;text-transform:uppercase;border-radius:8px;font-family:inherit;}
+nav button.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+main{padding:0 16px 24px;max-width:820px;margin:0 auto;}
+.box{background:var(--panel);border:1.5px solid var(--panel-border);border-radius:16px;padding:16px;margin-bottom:16px;}
 .panel{display:none;}
 .panel.active{display:block;}
-.statusbar{font-size:10px;color:var(--dim);letter-spacing:.5px;text-transform:uppercase;padding:6px 0;border-bottom:1px dashed var(--border);margin-bottom:10px;}
-.statusbar span{margin-right:4px;}
-.card{background:var(--panel);border:1px solid var(--border);padding:12px;margin-bottom:10px;border-radius:2px;}
-.card h3{margin:0 0 8px;font-size:11px;letter-spacing:1.5px;color:var(--accent2);text-transform:uppercase;}
-.count{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;float:right;}
-.toolbar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
-.toolbar button{background:none;border:1px solid var(--border);color:var(--dim);padding:6px 10px;font-size:10px;letter-spacing:1px;cursor:pointer;font-family:inherit;text-transform:uppercase;}
-.toolbar button.active{background:var(--accent2);color:var(--bg);border-color:var(--accent2);}
-input[type=text]{flex:1;min-width:140px;background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:8px;font-family:inherit;font-size:13px;text-transform:uppercase;}
-button.act{background:var(--accent);border:none;color:var(--bg);padding:8px 12px;font-family:inherit;font-size:11px;letter-spacing:1px;cursor:pointer;text-transform:uppercase;}
-button.act.secondary{background:none;border:1px solid var(--accent2);color:var(--accent2);}
-#geoResults div{padding:6px 8px;border:1px solid var(--border);margin-bottom:4px;cursor:pointer;font-size:12px;text-transform:uppercase;}
+.screen{background:var(--screen-bg);border-radius:10px;padding:14px 16px;margin-bottom:16px;font-family:'Courier New',monospace;}
+.screen .top{display:flex;justify-content:space-between;align-items:baseline;}
+.screen .top .l{color:var(--screen-text);font-size:15px;letter-spacing:2px;}
+.screen .top .v{color:var(--screen-text);font-size:26px;font-weight:bold;}
+.screen .sub{color:var(--screen-dim);font-size:11px;letter-spacing:1px;margin-top:4px;text-transform:uppercase;}
+.searchRow{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
+input[type=text]{flex:1;min-width:140px;background:#fff;border:1.5px solid var(--tab-border);color:var(--text);padding:10px;border-radius:8px;font-family:inherit;font-size:13px;}
+.btn{border-radius:8px;border:1.5px solid var(--accent);background:var(--accent);color:#fff;padding:10px 14px;font-size:12px;font-weight:600;letter-spacing:1px;cursor:pointer;text-transform:uppercase;font-family:inherit;}
+.btn.outline{background:#fff;color:var(--accent);}
+#geoResults div{background:#fff;padding:8px 10px;border:1px solid var(--tab-border);border-radius:8px;margin-bottom:6px;cursor:pointer;font-size:13px;}
 #geoResults div:hover{border-color:var(--accent);}
-.big{font-size:34px;color:var(--accent);}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;}
-.stat{background:var(--panel2);border:1px solid var(--border);padding:8px;text-align:center;}
-.stat .v{font-size:16px;color:var(--text);}
-.stat .l{font-size:9px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
-table{width:100%;border-collapse:collapse;font-size:11px;}
-th,td{border:1px solid var(--border);padding:5px 6px;text-align:center;}
-th{background:var(--panel2);color:var(--accent2);font-weight:normal;text-transform:uppercase;font-size:10px;}
-.badge{display:inline-block;padding:2px 8px;font-size:10px;border-radius:2px;letter-spacing:.5px;text-transform:uppercase;}
-.b-good{background:var(--good);color:#00230f;}
-.b-warn{background:var(--warn);color:#231d00;}
-.b-bad{background:var(--bad);color:#2b0000;}
-.b-extreme{background:var(--extreme);color:#1c0023;}
-.dim{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.5px;}
-iframe{width:100%;height:420px;border:1px solid var(--border);}
-.moonWrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
-.moonEmoji{font-size:60px;}
-footer{text-align:center;color:var(--dim);font-size:10px;padding:16px;text-transform:uppercase;letter-spacing:.5px;}
-#locName{color:var(--accent);font-size:12px;margin:4px 0 0;text-transform:uppercase;}
+#locName{color:var(--accent);font-size:12px;margin:4px 0 0;font-weight:600;letter-spacing:1px;}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:16px;}
+.tile{background:var(--accent);color:#fff;border-radius:12px;padding:14px 10px;text-align:center;}
+.tile .v{font-size:19px;font-weight:700;}
+.tile .l{font-size:10px;opacity:.85;margin-top:3px;}
+table{width:100%;border-collapse:collapse;font-size:11px;background:#fff;border-radius:8px;overflow:hidden;}
+th,td{border:1px solid var(--tab-border);padding:6px;text-align:center;}
+th{background:var(--tab-bg);color:var(--text);text-transform:uppercase;font-size:10px;}
+.badge{display:inline-block;padding:4px 10px;font-size:10px;border-radius:20px;letter-spacing:.5px;text-transform:uppercase;color:#fff;font-weight:600;}
+.b-good{background:var(--good);} .b-warn{background:var(--warn);} .b-bad{background:var(--bad);} .b-extreme{background:var(--extreme);}
+.dim{color:var(--dim);font-size:12px;}
+h3{margin:0 0 10px;font-size:12px;letter-spacing:2px;color:var(--text);text-transform:uppercase;}
+.knobRow{display:flex;gap:26px;flex-wrap:wrap;margin:6px 0 16px;}
+.knob{text-align:center;}
+.knob .circle{--pct:0;width:64px;height:64px;border-radius:50%;background:conic-gradient(var(--accent) calc(var(--pct)*1%),#d3e0e8 0);display:flex;align-items:center;justify-content:center;margin:0 auto 6px;position:relative;}
+.knob .circle::after{content:'';position:absolute;width:46px;height:46px;border-radius:50%;background:var(--panel);}
+.knob .val{position:relative;font-size:12px;font-weight:700;color:var(--text);}
+.knob .lbl{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;}
+.levelbar{background:#d7e2ea;border-radius:6px;height:10px;overflow:hidden;margin:8px 0 12px;}
+.levelbar .fill{height:100%;background:var(--accent);width:0%;}
+iframe{width:100%;height:400px;border:1.5px solid var(--tab-border);border-radius:10px;}
+.pillrow{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+.pillrow button{background:#fff;border:1.5px solid var(--accent);color:var(--accent);padding:8px 12px;font-size:11px;letter-spacing:1px;border-radius:8px;cursor:pointer;text-transform:uppercase;font-weight:600;font-family:inherit;}
+.pillrow button.active{background:var(--accent);color:#fff;}
 </style>
 </head>
 <body>
 
-<header>
-  <span class="ver">VERSION 1.0</span>
-  <h1>👾 WEATHER MULTI</h1>
-  <span class="ver">© 2026 ISMAELE</span>
-</header>
+<div class="swatches" id="swatches"></div>
 
 <nav id="tabs">
-  <button class="theme" onclick="toggleTheme()">Theme</button>
   <button data-tab="weather" class="active">Weather</button>
   <button data-tab="air">Air</button>
   <button data-tab="uv">UV &amp; Vis</button>
@@ -80,119 +84,114 @@ footer{text-align:center;color:var(--dim);font-size:10px;padding:16px;text-trans
 
 <main>
 
-  <div class="card">
-    <div class="toolbar">
-      <input type="text" id="cityInput" placeholder="SEARCH CITY...">
-      <button class="act" onclick="searchCity()">Search</button>
-      <button class="act secondary" onclick="useGeo()">📍 Use Location</button>
+  <div class="box">
+    <div class="searchRow">
+      <input type="text" id="cityInput" placeholder="Search city...">
+      <button class="btn" onclick="searchCity()">Search</button>
+      <button class="btn outline" onclick="useGeo()">📍 Use Location</button>
     </div>
     <div id="geoResults"></div>
-    <p id="locName">NO LOCATION SELECTED</p>
+    <p id="locName">No location selected</p>
   </div>
 
   <div id="panel-weather" class="panel active">
-    <div class="statusbar" id="statusWeather"><span>LOC: --</span><span>. MODEL: BEST-MATCH</span><span>. UPDATED: --</span></div>
-    <div class="card" id="headlineCard" style="display:none">
+    <div class="box">
+      <div class="screen">
+        <div class="top"><span class="l">WEATHER</span><span class="v" id="hTemp">--°</span></div>
+        <div class="sub" id="weatherSub">LOC: -- . UPDATED: --</div>
+      </div>
       <h3>Current Conditions</h3>
-      <div class="toolbar" style="align-items:center;margin-bottom:4px">
-        <div class="big" id="hTemp">--°</div>
-        <div class="dim" id="hDesc">-</div>
+      <div class="tiles">
+        <div class="tile"><div class="v" id="hHum">--%</div><div class="l">humidity</div></div>
+        <div class="tile"><div class="v" id="hPres">--</div><div class="l">pressure hPa</div></div>
+        <div class="tile"><div class="v" id="hWind">--</div><div class="l">wind km/h</div></div>
+        <div class="tile"><div class="v" id="hGust">--</div><div class="l">gusts km/h</div></div>
+        <div class="tile"><div class="v" id="hCloud">--%</div><div class="l">cloud cover</div></div>
       </div>
-      <div class="grid">
-        <div class="stat"><div class="v" id="hHum">--%</div><div class="l">Humidity</div></div>
-        <div class="stat"><div class="v" id="hPres">-- hPa</div><div class="l">Pressure</div></div>
-        <div class="stat"><div class="v" id="hWind">-- km/h</div><div class="l">Wind</div></div>
-        <div class="stat"><div class="v" id="hGust">-- km/h</div><div class="l">Gusts</div></div>
-        <div class="stat"><div class="v" id="hCloud">--%</div><div class="l">Cloud Cover</div></div>
-      </div>
-    </div>
-    <div class="card" id="compareCard" style="display:none">
-      <h3>Source Comparison<span class="count">6 MODELS</span></h3>
+      <h3>Source Comparison — 6 Models</h3>
       <p class="dim">Closer agreement across models = higher confidence.</p>
       <div style="overflow-x:auto"><table id="compareTable"></table></div>
     </div>
   </div>
 
   <div id="panel-air" class="panel">
-    <div class="statusbar"><span>LOC: --</span><span>. SCALE: EU / US AQI</span></div>
-    <div class="card" id="ariaCard" style="display:none">
-      <h3>Air Quality</h3>
-      <div class="grid">
-        <div class="stat"><div class="v" id="aqiEU">--</div><div class="l">EU AQI</div></div>
-        <div class="stat"><div class="v" id="aqiUS">--</div><div class="l">US AQI</div></div>
-        <div class="stat"><div class="v" id="pm25">-- µg/m³</div><div class="l">PM2.5</div></div>
-        <div class="stat"><div class="v" id="pm10">-- µg/m³</div><div class="l">PM10</div></div>
-        <div class="stat"><div class="v" id="ozone">-- µg/m³</div><div class="l">Ozone</div></div>
-        <div class="stat"><div class="v" id="no2">-- µg/m³</div><div class="l">NO₂</div></div>
+    <div class="box">
+      <div class="screen">
+        <div class="top"><span class="l">AIR QUALITY</span><span class="v" id="aqiEU">--</span></div>
+        <div class="sub">EU AQI SCALE</div>
       </div>
-      <p style="margin-top:10px" id="aqiBadge"></p>
+      <div class="levelbar"><div class="fill" id="aqiBar"></div></div>
+      <div class="tiles">
+        <div class="tile"><div class="v" id="aqiUS">--</div><div class="l">us aqi</div></div>
+        <div class="tile"><div class="v" id="pm25">--</div><div class="l">pm2.5 µg/m³</div></div>
+        <div class="tile"><div class="v" id="pm10">--</div><div class="l">pm10 µg/m³</div></div>
+        <div class="tile"><div class="v" id="ozone">--</div><div class="l">ozone µg/m³</div></div>
+        <div class="tile"><div class="v" id="no2">--</div><div class="l">no₂ µg/m³</div></div>
+      </div>
+      <p id="aqiBadge"></p>
     </div>
   </div>
 
   <div id="panel-uv" class="panel">
-    <div class="statusbar"><span>LOC: --</span><span>. AVG ACROSS 6 MODELS</span></div>
-    <div class="card" id="uvCard" style="display:none">
-      <h3>UV Index</h3>
-      <div class="toolbar" style="align-items:center">
-        <div class="big" id="uvVal">--</div>
-        <div id="uvBadge"></div>
+    <div class="box">
+      <div class="screen">
+        <div class="top"><span class="l">UV &amp; VISIBILITY</span></div>
+        <div class="sub" id="uvAdvice">--</div>
       </div>
-      <p class="dim" id="uvAdvice"></p>
-    </div>
-    <div class="card" id="visCard" style="display:none">
-      <h3>Horizontal Visibility</h3>
-      <div class="toolbar" style="align-items:center">
-        <div class="big" id="visVal">-- km</div>
-        <div id="visBadge"></div>
+      <div class="knobRow">
+        <div class="knob"><div class="circle" id="uvKnob"><span class="val" id="uvKnobVal">--</span></div><div class="lbl">UV Index</div></div>
+        <div class="knob"><div class="circle" id="visKnob"><span class="val" id="visKnobVal">--</span></div><div class="lbl">Visibility</div></div>
       </div>
+      <div id="uvBadge"></div>
+      <div id="visBadge" style="margin-top:8px"></div>
     </div>
   </div>
 
   <div id="panel-moon" class="panel">
-    <div class="statusbar"><span>LOC: --</span><span>. CALCULATED LOCALLY</span></div>
-    <div class="card" id="moonCard" style="display:none">
-      <h3>Moon Phase &amp; Visibility</h3>
-      <div class="moonWrap">
-        <div class="moonEmoji" id="moonEmoji">🌑</div>
-        <div>
-          <div class="v" id="moonPhaseName" style="font-size:16px">-</div>
-          <div class="dim" id="moonIllum">Illumination: --%</div>
-          <div class="dim" id="moonVis">Visibility Tonight: --</div>
-        </div>
+    <div class="box">
+      <div class="screen">
+        <div class="top"><span class="l" id="moonEmoji">🌑</span><span class="v" id="moonPhaseName">-</span></div>
+        <div class="sub" id="moonIllum">Illumination: --%</div>
       </div>
+      <div class="tiles">
+        <div class="tile"><div class="v" id="moonVisibleNow">--</div><div class="l">visible now</div></div>
+        <div class="tile"><div class="v" id="moonRise">--</div><div class="l">rise</div></div>
+        <div class="tile"><div class="v" id="moonSet">--</div><div class="l">set</div></div>
+      </div>
+      <p class="dim" id="moonReason"></p>
     </div>
   </div>
 
   <div id="panel-waves" class="panel">
-    <div class="statusbar"><span>LOC: --</span><span>. COASTAL DATA ONLY</span></div>
-    <div class="card" id="waveCard" style="display:none">
-      <h3>Sea State</h3>
-      <div id="waveContent" class="grid"></div>
+    <div class="box">
+      <div class="screen">
+        <div class="top"><span class="l">SEA STATE</span></div>
+        <div class="sub">Coastal locations only</div>
+      </div>
+      <div id="waveContent" class="tiles"></div>
     </div>
   </div>
 
   <div id="panel-maps" class="panel">
-    <div class="statusbar" id="statusMap"><span>OVERLAY: RAIN</span><span>. SOURCE: WINDY</span></div>
-    <div class="card">
+    <div class="box">
       <h3>Live Maps</h3>
-      <div class="toolbar" id="mapBtns">
+      <div class="pillrow" id="mapBtns">
         <button data-ov="rain" class="active">Rain / Radar</button>
         <button data-ov="wind">Wind</button>
         <button data-ov="temp">Temperature</button>
         <button data-ov="pressure">Pressure</button>
         <button data-ov="rh">Humidity</button>
         <button data-ov="waves">Waves</button>
-        <button data-ov="pm2p5">Air Quality (PM2.5)</button>
+        <button data-ov="pm2p5">Air Quality</button>
       </div>
-      <iframe id="mapFrame" src="" frameborder="0"></iframe>
+      <iframe id="mapFrame" src=""></iframe>
     </div>
   </div>
 
 </main>
-<footer id="footerText">© 2026 Ismaele. All rights reserved. Created: 12-08-2026 | Last Update: 12-08-2026</footer>
 
 <script>
-let LAT=null, LON=null, LOCNAME='';
+let LAT=null, LON=null, LOCNAME='', LOCTZ='UTC';
 const MODELS=[
   {id:'ecmwf_ifs025',label:'ECMWF (EU)'},
   {id:'gfs_seamless',label:'GFS (NOAA)'},
@@ -202,6 +201,21 @@ const MODELS=[
   {id:'jma_seamless',label:'JMA (JP)'}
 ];
 
+/* swatches / accent picker */
+const SWATCHES=['#5ab4d6','#8a6fd6','#e2924a','#4a7fa5','#5bc06b','#d95f95'];
+const swBox=document.getElementById('swatches');
+SWATCHES.forEach((c,i)=>{
+  const d=document.createElement('div');
+  d.className='swatch'+(i===3?' sel':'');
+  d.style.background=c;
+  d.onclick=()=>{
+    document.documentElement.style.setProperty('--accent',c);
+    document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('sel'));
+    d.classList.add('sel');
+  };
+  swBox.appendChild(d);
+});
+
 document.getElementById('tabs').addEventListener('click',e=>{
   if(e.target.tagName!=='BUTTON'||!e.target.dataset.tab)return;
   document.querySelectorAll('#tabs button[data-tab]').forEach(b=>b.classList.remove('active'));
@@ -209,17 +223,6 @@ document.getElementById('tabs').addEventListener('click',e=>{
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel-'+e.target.dataset.tab).classList.add('active');
 });
-
-function toggleTheme(){
-  const html=document.documentElement;
-  html.setAttribute('data-theme', html.getAttribute('data-theme')==='light'?'':'light');
-}
-
-function setLocStatus(){
-  document.querySelectorAll('.statusbar span:first-child').forEach(s=>{
-    if(s.textContent.startsWith('LOC:')) s.textContent='LOC: '+LOCNAME.toUpperCase();
-  });
-}
 
 async function searchCity(){
   const q=document.getElementById('cityInput').value.trim();
@@ -247,12 +250,11 @@ function useGeo(){
 function selectLocation(lat,lon,name){
   LAT=lat;LON=lon;LOCNAME=name;
   document.getElementById('locName').textContent=`📍 ${name} (${lat.toFixed(2)}, ${lon.toFixed(2)})`;
-  setLocStatus();
   loadAll();
 }
 
 async function loadAll(){
-  loadWeather();
+  await loadWeather();
   loadAir();
   loadWaves();
   loadMoon();
@@ -277,18 +279,18 @@ async function loadWeather(){
   const models=MODELS.map(m=>m.id).join(',');
   const url=`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,apparent_temperature,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cloud_cover,weather_code&hourly=temperature_2m,relative_humidity_2m,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index,visibility,cloud_cover&models=${models}&timezone=auto&forecast_days=2`;
   const d=await (await fetch(url)).json();
+  LOCTZ = d.timezone || 'UTC';
 
-  document.getElementById('headlineCard').style.display='block';
   document.getElementById('hTemp').textContent=Math.round(d.current.temperature_2m)+'°C';
-  document.getElementById('hDesc').textContent=`FEELS LIKE ${Math.round(d.current.apparent_temperature)}°C`;
   document.getElementById('hHum').textContent=d.current.relative_humidity_2m+'%';
-  document.getElementById('hPres').textContent=Math.round(d.current.pressure_msl)+' hPa';
-  document.getElementById('hWind').textContent=Math.round(d.current.wind_speed_10m)+' km/h '+compassDir(d.current.wind_direction_10m);
-  document.getElementById('hGust').textContent=Math.round(d.current.wind_gusts_10m)+' km/h';
+  document.getElementById('hPres').textContent=Math.round(d.current.pressure_msl);
+  document.getElementById('hWind').textContent=Math.round(d.current.wind_speed_10m)+' '+compassDir(d.current.wind_direction_10m);
+  document.getElementById('hGust').textContent=Math.round(d.current.wind_gusts_10m);
   document.getElementById('hCloud').textContent=d.current.cloud_cover+'%';
 
   const now=new Date();
-  document.querySelectorAll('#statusWeather span')[2].textContent='. UPDATED: '+now.toTimeString().slice(0,5);
+  document.getElementById('weatherSub').textContent=
+    `LOC: ${LOCNAME.toUpperCase()} . FEELS LIKE ${Math.round(d.current.apparent_temperature)}° . UPDATED: ${now.toTimeString().slice(0,5)}`;
 
   const idx=nearestIndex(d.hourly.time, d.current.time);
   const vars=[
@@ -314,7 +316,6 @@ async function loadWeather(){
     html+=cells+`<td><b>${count?(sum/count).toFixed(v.round):'—'}</b></td></tr>`;
   });
   document.getElementById('compareTable').innerHTML=html;
-  document.getElementById('compareCard').style.display='block';
 
   let uvSum=0,uvC=0,visSum=0,visC=0;
   MODELS.forEach(m=>{
@@ -327,30 +328,33 @@ async function loadWeather(){
   window.__cloudCover = d.current.cloud_cover;
 }
 
+function setKnob(id,valId,pct,text){
+  document.getElementById(id).style.setProperty('--pct',Math.max(0,Math.min(100,pct)));
+  document.getElementById(valId).textContent=text;
+}
+
 function renderUV(uv){
   if(uv==null)return;
-  document.getElementById('uvCard').style.display='block';
-  document.getElementById('uvVal').textContent=uv.toFixed(1);
+  setKnob('uvKnob','uvKnobVal',(uv/11)*100,uv.toFixed(1));
   let cls='b-good',label='Low',advice='No protection needed for short exposure.';
   if(uv>=11){cls='b-extreme';label='Extreme';advice='Avoid midday sun, maximum protection required.';}
   else if(uv>=8){cls='b-bad';label='Very High';advice='High SPF recommended, avoid peak hours.';}
   else if(uv>=6){cls='b-bad';label='High';advice='Sunscreen, sunglasses and hat recommended.';}
   else if(uv>=3){cls='b-warn';label='Moderate';advice='Protection recommended during midday hours.';}
-  document.getElementById('uvBadge').innerHTML=`<span class="badge ${cls}">${label}</span>`;
+  document.getElementById('uvBadge').innerHTML=`<span class="badge ${cls}">UV ${label}</span>`;
   document.getElementById('uvAdvice').textContent=advice;
 }
 
 function renderVis(visM){
   if(visM==null)return;
-  document.getElementById('visCard').style.display='block';
   const km=visM/1000;
-  document.getElementById('visVal').textContent=km.toFixed(1)+' km';
+  setKnob('visKnob','visKnobVal',(km/10)*100,km.toFixed(1)+'k');
   let cls='b-good',label='Excellent';
   if(km<0.2){cls='b-extreme';label='Dense Fog';}
   else if(km<1){cls='b-bad';label='Poor';}
   else if(km<4){cls='b-warn';label='Moderate';}
   else if(km<10){cls='b-good';label='Good';}
-  document.getElementById('visBadge').innerHTML=`<span class="badge ${cls}">${label}</span>`;
+  document.getElementById('visBadge').innerHTML=`<span class="badge ${cls}">${km.toFixed(1)} km — ${label}</span>`;
 }
 
 async function loadAir(){
@@ -358,14 +362,14 @@ async function loadAir(){
   try{
     const d=await (await fetch(url)).json();
     const c=d.current;
-    document.getElementById('ariaCard').style.display='block';
     document.getElementById('aqiEU').textContent=c.european_aqi ?? '--';
     document.getElementById('aqiUS').textContent=c.us_aqi ?? '--';
-    document.getElementById('pm25').textContent=(c.pm2_5??'--')+' µg/m³';
-    document.getElementById('pm10').textContent=(c.pm10??'--')+' µg/m³';
-    document.getElementById('ozone').textContent=(c.ozone??'--')+' µg/m³';
-    document.getElementById('no2').textContent=(c.nitrogen_dioxide??'--')+' µg/m³';
+    document.getElementById('pm25').textContent=(c.pm2_5??'--');
+    document.getElementById('pm10').textContent=(c.pm10??'--');
+    document.getElementById('ozone').textContent=(c.ozone??'--');
+    document.getElementById('no2').textContent=(c.nitrogen_dioxide??'--');
     const eu=c.european_aqi;
+    document.getElementById('aqiBar').style.width=Math.min(eu,100)+'%';
     let cls='b-good',label='Good';
     if(eu>100){cls='b-extreme';label='Extremely Poor';}
     else if(eu>=80){cls='b-bad';label='Very Poor';}
@@ -386,53 +390,114 @@ async function loadWaves(){
       box.innerHTML='<p class="dim">No marine data available: location is not coastal.</p>';
     }else{
       box.innerHTML=`
-        <div class="stat"><div class="v">${c.wave_height} m</div><div class="l">Wave Height</div></div>
-        <div class="stat"><div class="v">${c.wave_period} s</div><div class="l">Period</div></div>
-        <div class="stat"><div class="v">${compassDir(c.wave_direction||0)}</div><div class="l">Direction</div></div>
-        <div class="stat"><div class="v">${c.swell_wave_height??'--'} m</div><div class="l">Swell</div></div>`;
+        <div class="tile"><div class="v">${c.wave_height} m</div><div class="l">wave height</div></div>
+        <div class="tile"><div class="v">${c.wave_period} s</div><div class="l">period</div></div>
+        <div class="tile"><div class="v">${compassDir(c.wave_direction||0)}</div><div class="l">direction</div></div>
+        <div class="tile"><div class="v">${c.swell_wave_height??'--'} m</div><div class="l">swell</div></div>`;
     }
-    document.getElementById('waveCard').style.display='block';
   }catch(e){
-    document.getElementById('waveCard').style.display='block';
     document.getElementById('waveContent').innerHTML='<p class="dim">Data not available for this location.</p>';
   }
 }
 
+/* ---- Moon astronomy ---- */
+const dayMs=864e5, rad=Math.PI/180, e=rad*23.4397;
+function toDays(date){return date.valueOf()/dayMs-0.5+2440588-2451545;}
+function rightAscension(l,b){return Math.atan2(Math.sin(l)*Math.cos(e)-Math.tan(b)*Math.sin(e),Math.cos(l));}
+function declination(l,b){return Math.asin(Math.sin(b)*Math.cos(e)+Math.cos(b)*Math.sin(e)*Math.sin(l));}
+function azimuthF(H,phi,dec){return Math.atan2(Math.sin(H),Math.cos(H)*Math.sin(phi)-Math.tan(dec)*Math.cos(phi));}
+function altitudeF(H,phi,dec){return Math.asin(Math.sin(phi)*Math.sin(dec)+Math.cos(phi)*Math.cos(dec)*Math.cos(H));}
+function siderealTime(d,lw){return rad*(280.16+360.9856235*d)-lw;}
+function solarMeanAnomaly(d){return rad*(357.5291+0.98560028*d);}
+function eclipticLongitude(M){const C=rad*(1.9148*Math.sin(M)+0.02*Math.sin(2*M)+0.0003*Math.sin(3*M)),P=rad*102.9372;return M+C+P+Math.PI;}
+function sunCoords(d){const M=solarMeanAnomaly(d),L=eclipticLongitude(M);return{dec:declination(L,0),ra:rightAscension(L,0)};}
+function moonCoords(d){
+  const L=rad*(218.316+13.176396*d), M=rad*(134.963+13.064993*d), F=rad*(93.272+13.229350*d);
+  const l=L+rad*6.289*Math.sin(M), b=rad*5.128*Math.sin(F), dt=385001-20905*Math.cos(M);
+  return{ra:rightAscension(l,b),dec:declination(l,b),dist:dt};
+}
+function getMoonPosition(date,lat,lng){
+  const lw=rad*-lng, phi=rad*lat, d=toDays(date), c=moonCoords(d), H=siderealTime(d,lw)-c.ra;
+  return{azimuth:azimuthF(H,phi,c.dec),altitude:altitudeF(H,phi,c.dec),distance:c.dist};
+}
+function getMoonIllumination(date){
+  const d=toDays(date), s=sunCoords(d), m=moonCoords(d), sdist=149598000;
+  const phi=Math.acos(Math.sin(s.dec)*Math.sin(m.dec)+Math.cos(s.dec)*Math.cos(m.dec)*Math.cos(s.ra-m.ra));
+  const inc=Math.atan2(sdist*Math.sin(phi),m.dist-sdist*Math.cos(phi));
+  const angle=Math.atan2(Math.cos(s.dec)*Math.sin(s.ra-m.ra),Math.sin(s.dec)*Math.cos(m.dec)-Math.cos(s.dec)*Math.sin(m.dec)*Math.cos(s.ra-m.ra));
+  return{fraction:(1+Math.cos(inc))/2,phase:0.5+0.5*inc*(angle<0?-1:1)/Math.PI};
+}
+function hoursLater(date,h){return new Date(date.valueOf()+h*dayMs/24);}
+function getMoonTimes(date,lat,lng){
+  const t=new Date(date); t.setHours(0,0,0,0);
+  const hc=0.133*rad;
+  let h0=getMoonPosition(t,lat,lng).altitude-hc, h1,h2,rise,set,a,b,xe,ye,d,roots,x1,x2,dx;
+  for(let i=1;i<=24;i+=2){
+    h1=getMoonPosition(hoursLater(t,i),lat,lng).altitude-hc;
+    h2=getMoonPosition(hoursLater(t,i+1),lat,lng).altitude-hc;
+    a=(h0+h2)/2-h1; b=(h2-h0)/2; xe=-b/(2*a); ye=(a*xe+b)*xe+h1;
+    d=b*b-4*a*h1; roots=0;
+    if(d>=0){dx=Math.sqrt(d)/(Math.abs(a)*2); x1=xe-dx; x2=xe+dx;
+      if(Math.abs(x1)<=1)roots++; if(Math.abs(x2)<=1)roots++; if(x1<-1)x1=x2;}
+    if(roots===1){ if(h0<0) rise=i+x1; else set=i+x1; }
+    else if(roots===2){ rise=i+(ye<0?x2:x1); set=i+(ye<0?x1:x2); }
+    if(rise&&set)break;
+    h0=h2;
+  }
+  const result={};
+  if(rise)result.rise=hoursLater(t,rise);
+  if(set)result.set=hoursLater(t,set);
+  if(!rise&&!set) result[ye>0?'alwaysUp':'alwaysDown']=true;
+  return result;
+}
+function fmtTime(date){
+  if(!date)return '--';
+  return date.toLocaleTimeString('en-GB',{timeZone:LOCTZ,hour:'2-digit',minute:'2-digit'});
+}
+
 function loadMoon(){
   const now=new Date();
-  let year=now.getFullYear(),month=now.getMonth()+1,day=now.getDate();
-  if(month<3){year--;month+=12;}
-  month++;
-  const c=365.25*year, e=30.6*month;
-  let jd=c+e+day-694039.09;
-  jd/=29.5305882;
-  const frac=jd-Math.floor(jd);
-  let b=Math.round(frac*8);
-  if(b>=8)b=0;
+  const illum=getMoonIllumination(now);
+  const idx=Math.round(illum.phase*8)%8;
   const names=['New Moon','Waxing Crescent','First Quarter','Waxing Gibbous','Full Moon','Waning Gibbous','Last Quarter','Waning Crescent'];
   const emojis=['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'];
-  const illum=(50*(1-Math.cos(2*Math.PI*frac))).toFixed(0);
-  document.getElementById('moonCard').style.display='block';
-  document.getElementById('moonEmoji').textContent=emojis[b];
-  document.getElementById('moonPhaseName').textContent=names[b];
-  document.getElementById('moonIllum').textContent=`Illumination: ${illum}%`;
+  document.getElementById('moonEmoji').textContent=emojis[idx];
+  document.getElementById('moonPhaseName').textContent=names[idx];
+  document.getElementById('moonIllum').textContent=`Illumination: ${(illum.fraction*100).toFixed(0)}%`;
+
+  const times=getMoonTimes(now,LAT,LON);
+  document.getElementById('moonRise').textContent = times.alwaysUp?'—':fmtTime(times.rise);
+  document.getElementById('moonSet').textContent = times.alwaysDown?'—':fmtTime(times.set);
+
+  const altDeg=getMoonPosition(now,LAT,LON).altitude/rad;
   const cloud=window.__cloudCover;
-  let visText='waiting for cloud data...';
-  if(cloud!=null){
-    if(cloud<20)visText='Excellent (clear sky)';
-    else if(cloud<50)visText='Good (few clouds)';
-    else if(cloud<80)visText='Poor (cloudy sky)';
-    else visText='None (overcast)';
+  let visible=false, reason='';
+
+  if(times.alwaysDown){
+    reason='Moon does not rise today at this location.';
+  }else if(altDeg<=0 && !times.alwaysUp){
+    reason = times.rise
+      ? `Moon is below the horizon right now — it rises at ${fmtTime(times.rise)}.`
+      : 'Moon is below the horizon right now.';
+  }else if(cloud!=null && cloud>=80){
+    reason=`Moon is above the horizon but the sky is overcast (${cloud}% cloud cover).`;
+  }else if(illum.fraction*100<5){
+    reason=`Moon is above the horizon but only ${(illum.fraction*100).toFixed(0)}% illuminated — too faint to notice near new phase.`;
+  }else{
+    visible=true;
+    reason = times.set ? `Visible until it sets at ${fmtTime(times.set)}.` : 'Visible now.';
   }
-  document.getElementById('moonVis').textContent=`Visibility Tonight: ${visText}`;
+
+  document.getElementById('moonVisibleNow').textContent = visible?'YES':'NO';
+  document.getElementById('moonReason').textContent = reason;
 }
+/* ---- end moon astronomy ---- */
 
 document.getElementById('mapBtns').addEventListener('click',e=>{
   if(e.target.tagName!=='BUTTON')return;
   document.querySelectorAll('#mapBtns button').forEach(b=>b.classList.remove('active'));
   e.target.classList.add('active');
   updateMap(e.target.dataset.ov);
-  document.querySelectorAll('#statusMap span')[0].textContent='OVERLAY: '+e.target.textContent.toUpperCase();
 });
 
 function updateMap(overlay){
@@ -443,4 +508,4 @@ function updateMap(overlay){
 </script>
 </body>
 </html>
-© 2026 Ismaele. All rights reserved. Created: 12-08-2026 | Last Update: 12-08-2026
+© 2026 Ismaele. All rights reserved. Created: 12-08-2026 | Last Update: 13-08-2026
