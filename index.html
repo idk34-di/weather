@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VERSION 3.1</title>
+<title>VERSION 3.2</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600&display=swap');
 
@@ -161,7 +161,10 @@
       <div class="pad"><span class="pad-note" id="hPres">--</span><span class="pad-sub">pressure hpa</span></div>
       <div class="pad"><span class="pad-note" id="hWind">--</span><span class="pad-sub">wind km/h</span></div>
       <div class="pad"><span class="pad-note" id="hGust">--</span><span class="pad-sub">gusts km/h</span></div>
-      <div class="pad" style="grid-column:span 4"><span class="pad-note" id="hCloud">--%</span><span class="pad-sub">cloud cover</span></div>
+      <div class="pad"><span class="pad-note" id="hSunrise">--</span><span class="pad-sub">☀ sunrise</span></div>
+      <div class="pad"><span class="pad-note" id="hSunset">--</span><span class="pad-sub">☾ sunset</span></div>
+      <div class="pad"><span class="pad-note" id="hDaylight">--</span><span class="pad-sub">daylight</span></div>
+      <div class="pad"><span class="pad-note" id="hCloud">--%</span><span class="pad-sub">cloud cover</span></div>
     </div>
     <div class="step-section">
       <div class="step-track-wrap">
@@ -381,7 +384,7 @@ async function loadAll(){
 
 async function loadWeather(){
   const models=MODELS.map(m=>m.id).join(',');
-  const url=`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,apparent_temperature,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cloud_cover&hourly=temperature_2m,relative_humidity_2m,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index,visibility,cloud_cover,precipitation_probability&models=${models}&timezone=auto&forecast_days=2`;
+  const url=`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,apparent_temperature,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cloud_cover&hourly=temperature_2m,relative_humidity_2m,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index,visibility,cloud_cover,precipitation_probability&daily=sunrise,sunset,daylight_duration&models=${models}&timezone=auto&forecast_days=2`;
   const d=await (await fetch(url)).json();
   LOCTZ = d.timezone || 'UTC';
 
@@ -394,6 +397,17 @@ async function loadWeather(){
   document.getElementById('statLoc').textContent='LOC: '+LOCNAME.toUpperCase();
   document.getElementById('statFeel').textContent='FEELS: '+Math.round(d.current.apparent_temperature)+'°';
   document.getElementById('statUpdated').textContent='UPD: '+new Date().toTimeString().slice(0,5);
+
+  // sunrise / sunset / daylight (today = index 0, local time already thanks to timezone=auto)
+  if(d.daily && d.daily.sunrise && d.daily.sunrise[0]){
+    document.getElementById('hSunrise').textContent = d.daily.sunrise[0].slice(11,16);
+    document.getElementById('hSunset').textContent = d.daily.sunset[0].slice(11,16);
+    const secs = d.daily.daylight_duration ? d.daily.daylight_duration[0] : null;
+    if(secs!=null){
+      const h=Math.floor(secs/3600), m=Math.round((secs%3600)/60);
+      document.getElementById('hDaylight').textContent = h+'h '+m+'m';
+    }
+  }
 
   const idx=nearestIndex(d.hourly.time, d.current.time);
 
@@ -635,4 +649,4 @@ renderSaved();
 </script>
 </body>
 </html>
-© 2026 Ismaele. All rights reserved. Created: 12-08-2026 | Last Update: 13-08-2026
+© 2026 Ismaele. All rights reserved. Created: 12-08-2026 | Last Update: 14-08-2026
