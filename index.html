@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VERSION 3.2</title>
+<title>Weather Multi</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600&display=swap');
 
@@ -55,12 +55,17 @@
   .pad-note { font-family: var(--font-mono); font-size: 13px; font-weight: bold; }
   .pad-sub { font-family: var(--font-mono); font-size: 9px; opacity: .7; text-transform: uppercase; }
 
+  .daytabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: .75rem; }
+  .daytabs button { padding: 5px 11px; border-radius: 2px; border: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px; cursor: pointer; background: transparent; color: var(--text2); transition: all .1s; }
+  .daytabs button.active { background: var(--accent2); border-color: var(--accent2); color: #001a10; }
+
   .step-section { margin-bottom: 1rem; }
   .step-track-wrap { margin-bottom: 10px; }
   .step-track-label { font-family: var(--font-mono); font-size: 9px; color: var(--text2); letter-spacing: 1px; margin-bottom: 3px; }
   .step-row { display: grid; gap: 3px; }
-  .step { height: 22px; border-radius: 2px; border: 1px solid var(--border); background: var(--step-off); }
+  .step { height: 22px; border-radius: 2px; border: 1px solid var(--border); background: var(--step-off); cursor: pointer; transition: outline .08s; }
   .step.current { outline: 2px solid var(--step-cur); outline-offset: 1px; }
+  .step-readout { font-family: var(--font-mono); font-size: 11px; color: var(--accent2); letter-spacing: 1px; margin-top: 4px; }
 
   .controls-panel { border-top: 1px solid var(--border); padding-top: 1rem; margin-top: .5rem; }
   .knobs-row { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 1rem; }
@@ -149,7 +154,7 @@
   <!-- WEATHER -->
   <div id="panel-weather" class="panel active device">
     <div class="screen">
-      <div class="screen-top"><span class="screen-label">WEATHER</span><span class="screen-bpm" id="hTemp">--°</span></div>
+      <div class="screen-top"><span class="screen-label">CONDITIONS</span><span class="screen-bpm" id="hTemp">--°</span></div>
       <div class="screen-row">
         <span class="screen-info on" id="statLoc">LOC: --</span>
         <span class="screen-info" id="statFeel">FEELS: --</span>
@@ -161,21 +166,31 @@
       <div class="pad"><span class="pad-note" id="hPres">--</span><span class="pad-sub">pressure hpa</span></div>
       <div class="pad"><span class="pad-note" id="hWind">--</span><span class="pad-sub">wind km/h</span></div>
       <div class="pad"><span class="pad-note" id="hGust">--</span><span class="pad-sub">gusts km/h</span></div>
+      <div class="pad"><span class="pad-note" id="hPrecip">--</span><span class="pad-sub">precipitation mm</span></div>
+      <div class="pad"><span class="pad-note" id="hCloud">--%</span><span class="pad-sub">cloud cover</span></div>
       <div class="pad"><span class="pad-note" id="hSunrise">--</span><span class="pad-sub">☀ sunrise</span></div>
       <div class="pad"><span class="pad-note" id="hSunset">--</span><span class="pad-sub">☾ sunset</span></div>
-      <div class="pad"><span class="pad-note" id="hDaylight">--</span><span class="pad-sub">daylight</span></div>
-      <div class="pad"><span class="pad-note" id="hCloud">--%</span><span class="pad-sub">cloud cover</span></div>
+      <div class="pad" style="grid-column:span 4"><span class="pad-note" id="hDaylight">--</span><span class="pad-sub">daylight</span></div>
     </div>
+
     <div class="step-section">
+      <div class="daytabs" id="dayTabs"></div>
+
       <div class="step-track-wrap">
-        <div class="step-track-label">TEMP °C · NEXT 24H</div>
+        <div class="step-track-label">TEMPERATURE °C</div>
         <div class="step-row" id="tempSteps" style="grid-template-columns:repeat(24,1fr)"></div>
       </div>
       <div class="step-track-wrap">
-        <div class="step-track-label">RAIN % · NEXT 24H</div>
+        <div class="step-track-label">PRECIPITATION %</div>
         <div class="step-row" id="rainSteps" style="grid-template-columns:repeat(24,1fr)"></div>
       </div>
+      <div class="step-track-wrap">
+        <div class="step-track-label">HUMIDITY %</div>
+        <div class="step-row" id="humSteps" style="grid-template-columns:repeat(24,1fr)"></div>
+      </div>
+      <div class="step-readout" id="stepReadout">-- · -- · -- · --</div>
     </div>
+
     <div class="controls-panel">
       <div class="screen-label" style="margin-bottom:.6rem">SOURCE COMPARISON — 6 MODELS</div>
       <div style="overflow-x:auto"><table id="compareTable"></table></div>
@@ -279,7 +294,7 @@
 </main>
 
 <script>
-// ═══════════════ THEMES (identical system to synth) ═══════════════
+// ═══════════════ THEMES ═══════════════
 const THEMES = [
   { name:'Cyan Night',  dot:'#5bc8e8', vars:{'--bg':'#0a0e14','--surface':'#111820','--surface2':'#1a2330','--border':'#1e3040','--accent':'#5bc8e8','--accent2':'#00ff88','--accent3':'#ff6b6b','--text':'#c8dce8','--text2':'#4a7090','--screen-bg':'#000d14','--screen-text':'#00d4ff','--screen-dim':'#003355','--pad':'#5bc8e8','--pad-text':'#001a28','--step-on':'#5bc8e8','--step-off':'#1a2330','--step-cur':'#00ff88'}},
   { name:'Purple Haze', dot:'#b06ef3', vars:{'--bg':'#0d0814','--surface':'#160e20','--surface2':'#1f1530','--border':'#2d1f45','--accent':'#b06ef3','--accent2':'#f06edf','--accent3':'#ff6b6b','--text':'#d8c8f0','--text2':'#5a3a80','--screen-bg':'#08040f','--screen-text':'#c87fff','--screen-dim':'#2a0a50','--pad':'#b06ef3','--pad-text':'#0d0814','--step-on':'#b06ef3','--step-off':'#1f1530','--step-cur':'#f06edf'}},
@@ -324,6 +339,7 @@ renderTabs();
 
 // ═══════════════ WEATHER LOGIC ═══════════════
 let LAT=null, LON=null, LOCNAME='', LOCTZ='UTC';
+let HOURLY=null, BASEIDX=0, selectedDay=0, selectedStep=0;
 const MODELS=[
   {id:'ecmwf_ifs025',label:'ECMWF'},
   {id:'gfs_seamless',label:'GFS'},
@@ -383,48 +399,43 @@ async function loadAll(){
 }
 
 async function loadWeather(){
-  const models=MODELS.map(m=>m.id).join(',');
-  const url=`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,apparent_temperature,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cloud_cover&hourly=temperature_2m,relative_humidity_2m,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index,visibility,cloud_cover,precipitation_probability&daily=sunrise,sunset,daylight_duration&models=${models}&timezone=auto&forecast_days=2`;
-  const d=await (await fetch(url)).json();
-  LOCTZ = d.timezone || 'UTC';
+  // Call 1: simple single-source (no models suffix issue) — current + daily + 8-day hourly
+  const url1=`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,apparent_temperature,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cloud_cover,precipitation&hourly=temperature_2m,relative_humidity_2m,precipitation_probability&daily=sunrise,sunset,daylight_duration&timezone=auto&forecast_days=8`;
+  const d1=await (await fetch(url1)).json();
+  LOCTZ = d1.timezone || 'UTC';
 
-  document.getElementById('hTemp').textContent=Math.round(d.current.temperature_2m)+'°';
-  document.getElementById('hHum').textContent=d.current.relative_humidity_2m+'%';
-  document.getElementById('hPres').textContent=Math.round(d.current.pressure_msl);
-  document.getElementById('hWind').textContent=Math.round(d.current.wind_speed_10m)+' '+compassDir(d.current.wind_direction_10m);
-  document.getElementById('hGust').textContent=Math.round(d.current.wind_gusts_10m);
-  document.getElementById('hCloud').textContent=d.current.cloud_cover+'%';
+  document.getElementById('hTemp').textContent=Math.round(d1.current.temperature_2m)+'°';
+  document.getElementById('hHum').textContent=d1.current.relative_humidity_2m+'%';
+  document.getElementById('hPres').textContent=Math.round(d1.current.pressure_msl);
+  document.getElementById('hWind').textContent=Math.round(d1.current.wind_speed_10m)+' '+compassDir(d1.current.wind_direction_10m);
+  document.getElementById('hGust').textContent=Math.round(d1.current.wind_gusts_10m);
+  document.getElementById('hPrecip').textContent=(d1.current.precipitation??0).toFixed(1);
+  document.getElementById('hCloud').textContent=d1.current.cloud_cover+'%';
   document.getElementById('statLoc').textContent='LOC: '+LOCNAME.toUpperCase();
-  document.getElementById('statFeel').textContent='FEELS: '+Math.round(d.current.apparent_temperature)+'°';
+  document.getElementById('statFeel').textContent='FEELS: '+Math.round(d1.current.apparent_temperature)+'°';
   document.getElementById('statUpdated').textContent='UPD: '+new Date().toTimeString().slice(0,5);
 
-  // sunrise / sunset / daylight (today = index 0, local time already thanks to timezone=auto)
-  if(d.daily && d.daily.sunrise && d.daily.sunrise[0]){
-    document.getElementById('hSunrise').textContent = d.daily.sunrise[0].slice(11,16);
-    document.getElementById('hSunset').textContent = d.daily.sunset[0].slice(11,16);
-    const secs = d.daily.daylight_duration ? d.daily.daylight_duration[0] : null;
+  if(d1.daily && d1.daily.sunrise && d1.daily.sunrise[0]){
+    document.getElementById('hSunrise').textContent = d1.daily.sunrise[0].slice(11,16);
+    document.getElementById('hSunset').textContent = d1.daily.sunset[0].slice(11,16);
+    const secs = d1.daily.daylight_duration ? d1.daily.daylight_duration[0] : null;
     if(secs!=null){
       const h=Math.floor(secs/3600), m=Math.round((secs%3600)/60);
       document.getElementById('hDaylight').textContent = h+'h '+m+'m';
     }
   }
 
-  const idx=nearestIndex(d.hourly.time, d.current.time);
+  HOURLY = d1.hourly;
+  BASEIDX = nearestIndex(d1.hourly.time, d1.current.time);
+  selectedDay = 0; selectedStep = 0;
+  renderDayTabs(d1.daily.time);
+  renderTimelines();
 
-  // 24h step timelines (best-match model, plain hourly vars — no per-model suffix)
-  const tempCells=[], rainCells=[];
-  for(let i=0;i<24;i++){
-    const hi=idx+i;
-    const temp=d.hourly[`temperature_2m_${MODELS[0].id}`]?.[hi];
-    const rain=d.hourly[`precipitation_probability_${MODELS[0].id}`]?.[hi];
-    const tPct = temp!=null ? Math.max(0,Math.min(1,(temp+10)/40)) : 0.5;
-    const tColor = `hsl(${200-tPct*200},70%,55%)`;
-    tempCells.push(`<div class="step${i===0?' current':''}" title="${temp!=null?temp.toFixed(1)+'°C':'--'}" style="background:${tColor}"></div>`);
-    const rPct = rain!=null ? rain/100 : 0;
-    rainCells.push(`<div class="step${i===0?' current':''}" title="${rain!=null?rain+'%':'--'}" style="background:rgba(91,200,232,${0.15+rPct*0.85})"></div>`);
-  }
-  document.getElementById('tempSteps').innerHTML=tempCells.join('');
-  document.getElementById('rainSteps').innerHTML=rainCells.join('');
+  // Call 2: multi-model comparison + UV/Visibility average
+  const models=MODELS.map(m=>m.id).join(',');
+  const url2=`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=temperature_2m,relative_humidity_2m,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index,visibility,cloud_cover&models=${models}&timezone=auto&forecast_days=2`;
+  const d2=await (await fetch(url2)).json();
+  const idx2=nearestIndex(d2.hourly.time, d1.current.time);
 
   const vars=[
     {key:'temperature_2m',label:'Temp',unit:'°C',round:1},
@@ -441,8 +452,8 @@ async function loadWeather(){
     html+=`<tr><td style="text-align:left">${v.label}</td>`;
     let sum=0,count=0,cells='';
     MODELS.forEach(m=>{
-      const arr=d.hourly[`${v.key}_${m.id}`];
-      const val=arr?arr[idx]:null;
+      const arr=d2.hourly[`${v.key}_${m.id}`];
+      const val=arr?arr[idx2]:null;
       if(val!==null&&val!==undefined){sum+=val;count++;}
       cells+=`<td>${val!==null&&val!==undefined?val.toFixed(v.round):'—'}</td>`;
     });
@@ -452,13 +463,65 @@ async function loadWeather(){
 
   let uvSum=0,uvC=0,visSum=0,visC=0;
   MODELS.forEach(m=>{
-    const uvArr=d.hourly[`uv_index_${m.id}`], visArr=d.hourly[`visibility_${m.id}`];
-    if(uvArr&&uvArr[idx]!=null){uvSum+=uvArr[idx];uvC++;}
-    if(visArr&&visArr[idx]!=null){visSum+=visArr[idx];visC++;}
+    const uvArr=d2.hourly[`uv_index_${m.id}`], visArr=d2.hourly[`visibility_${m.id}`];
+    if(uvArr&&uvArr[idx2]!=null){uvSum+=uvArr[idx2];uvC++;}
+    if(visArr&&visArr[idx2]!=null){visSum+=visArr[idx2];visC++;}
   });
   renderUV(uvC?uvSum/uvC:null);
   renderVis(visC?visSum/visC:null);
-  window.__cloudCover = d.current.cloud_cover;
+  window.__cloudCover = d1.current.cloud_cover;
+}
+
+function renderDayTabs(dailyTimes){
+  const n=Math.min(7,dailyTimes.length);
+  const labels=[];
+  for(let i=0;i<n;i++){
+    if(i===0)labels.push('TODAY');
+    else if(i===1)labels.push('TOMORROW');
+    else{
+      const dt=new Date(dailyTimes[i]+'T12:00:00');
+      labels.push(dt.toLocaleDateString('en-GB',{weekday:'short',timeZone:LOCTZ}).toUpperCase());
+    }
+  }
+  document.getElementById('dayTabs').innerHTML=labels.map((l,i)=>
+    `<button class="${i===selectedDay?'active':''}" onclick="switchDay(${i})">${l}</button>`
+  ).join('');
+}
+function switchDay(d){
+  selectedDay=d; selectedStep=0;
+  document.querySelectorAll('#dayTabs button').forEach((b,i)=>b.classList.toggle('active',i===d));
+  renderTimelines();
+}
+function selectStep(i){ selectedStep=i; renderTimelines(); }
+
+function renderTimelines(){
+  if(!HOURLY)return;
+  const offsetBase = BASEIDX + selectedDay*24;
+  let tempCells='',rainCells='',humCells='';
+  for(let i=0;i<24;i++){
+    const hi=offsetBase+i;
+    const temp=HOURLY.temperature_2m[hi];
+    const rain=HOURLY.precipitation_probability[hi];
+    const hum=HOURLY.relative_humidity_2m[hi];
+    const sel=(i===selectedStep)?' current':'';
+    const tPct=temp!=null?Math.max(0,Math.min(1,(temp+10)/40)):0.5;
+    tempCells+=`<div class="step${sel}" onclick="selectStep(${i})" title="${temp!=null?temp.toFixed(1)+'°C':'--'}" style="background:hsl(${200-tPct*200},70%,55%)"></div>`;
+    const rPct=rain!=null?rain/100:0;
+    rainCells+=`<div class="step${sel}" onclick="selectStep(${i})" title="${rain!=null?rain+'%':'--'}" style="background:rgba(91,200,232,${0.15+rPct*0.85})"></div>`;
+    const hPct=hum!=null?hum/100:0.5;
+    humCells+=`<div class="step${sel}" onclick="selectStep(${i})" title="${hum!=null?hum+'%':'--'}" style="background:rgba(0,255,136,${0.15+hPct*0.85})"></div>`;
+  }
+  document.getElementById('tempSteps').innerHTML=tempCells;
+  document.getElementById('rainSteps').innerHTML=rainCells;
+  document.getElementById('humSteps').innerHTML=humCells;
+  updateReadout(offsetBase);
+}
+function updateReadout(offsetBase){
+  const hi=offsetBase+selectedStep;
+  const timeStr = HOURLY.time[hi] ? HOURLY.time[hi].slice(11,16) : '--';
+  const temp=HOURLY.temperature_2m[hi], rain=HOURLY.precipitation_probability[hi], hum=HOURLY.relative_humidity_2m[hi];
+  document.getElementById('stepReadout').textContent =
+    `${timeStr} · ${temp!=null?temp.toFixed(1)+'°C':'--'} · ${rain!=null?rain+'% rain':'--'} · ${hum!=null?hum+'% humidity':'--'}`;
 }
 
 function setKnob(dotId,valId,pct,text){
@@ -625,7 +688,7 @@ function updateMap(overlay){
   document.getElementById('mapFrame').src=`https://embed.windy.com/embed2.html?lat=${LAT}&lon=${LON}&detailLat=${LAT}&detailLon=${LON}&width=650&height=450&zoom=7&level=surface&overlay=${overlay}&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1`;
 }
 
-// ═══════════════ SAVED LOCATIONS (mirrors SAVED SONGS) ═══════════════
+// ═══════════════ SAVED LOCATIONS ═══════════════
 let savedLocations=[];
 function loadSavedFromStorage(){try{const r=localStorage.getItem('weatherLocations');if(r)savedLocations=JSON.parse(r);}catch(e){savedLocations=[];}}
 function saveSavedToStorage(){try{localStorage.setItem('weatherLocations',JSON.stringify(savedLocations));}catch(e){showToast('Storage full!',true);}}
@@ -649,4 +712,4 @@ renderSaved();
 </script>
 </body>
 </html>
-© 2026 Ismaele. All rights reserved. Created: 12-08-2026 | Last Update: 14-08-2026
+© 2026 Ismaele. All rights reserved. Created: 12-08-2026 | Last Update: 17-08-2026
