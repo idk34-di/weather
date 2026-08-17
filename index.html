@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Weather Multi</title>
+<title>VERSION 3.5</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600&display=swap');
 
@@ -13,7 +13,6 @@
     --accent3: #ff6b6b; --text: #c8dce8; --text2: #4a7090;
     --screen-bg: #000d14; --screen-text: #00d4ff; --screen-dim: #003355;
     --pad: #5bc8e8; --pad-text: #001a28;
-    --step-on: #5bc8e8; --step-off: #1a2330; --step-cur: #00ff88;
     --font-mono: 'Share Tech Mono', monospace;
     --font-ui: 'Rajdhani', sans-serif;
   }
@@ -55,19 +54,30 @@
   .pad-note { font-family: var(--font-mono); font-size: 13px; font-weight: bold; }
   .pad-sub { font-family: var(--font-mono); font-size: 9px; opacity: .7; text-transform: uppercase; }
 
-  .daytabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: .75rem; }
+  .daytabs { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: .9rem; }
   .daytabs button { padding: 5px 11px; border-radius: 2px; border: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px; cursor: pointer; background: transparent; color: var(--text2); transition: all .1s; }
   .daytabs button.active { background: var(--accent2); border-color: var(--accent2); color: #001a10; }
 
-  .step-section { margin-bottom: 1rem; }
-  .step-track-wrap { margin-bottom: 10px; }
-  .step-track-label { font-family: var(--font-mono); font-size: 9px; color: var(--text2); letter-spacing: 1px; margin-bottom: 3px; }
-  .step-row { display: grid; gap: 3px; }
-  .step { height: 22px; border-radius: 2px; border: 1px solid var(--border); background: var(--step-off); cursor: pointer; transition: outline .08s; }
-  .step.current { outline: 2px solid var(--step-cur); outline-offset: 1px; }
-  .step-readout { font-family: var(--font-mono); font-size: 11px; color: var(--accent2); letter-spacing: 1px; margin-top: 4px; }
+  /* ---- GAUGE BARS (replace old static grid) ---- */
+  .gauge-wrap { margin-bottom: 18px; }
+  .gauge-label-row { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--font-mono); font-size: 9px; color: var(--text2); letter-spacing: 1px; margin-bottom: 5px; text-transform: uppercase; }
+  .gauge-label-row .name { color: var(--accent); }
+  .gauge-track { position: relative; height: 16px; border-radius: 8px; border: 1px solid var(--border); overflow: visible; }
+  .gauge-track.temp { background: linear-gradient(90deg,#3a7bd5,#5bc8e8,#ffd166,#ff8c42,#ef476f); }
+  .gauge-track.rain { background: linear-gradient(90deg,var(--surface2),var(--accent)); }
+  .gauge-track.hum  { background: linear-gradient(90deg,var(--surface2),var(--accent2)); }
+  .gauge-marker { position: absolute; top: -5px; width: 6px; height: 26px; border-radius: 3px; background: var(--accent2); box-shadow: 0 0 10px var(--accent2); transform: translateX(-50%); transition: left .5s cubic-bezier(.4,0,.2,1); }
+  .gauge-ticks { display: flex; justify-content: space-between; margin-top: 5px; gap: 2px; }
+  .gauge-ticks div { flex: 1; height: 8px; border-radius: 1px; background: var(--surface2); border: 1px solid var(--border); cursor: pointer; }
+  .gauge-ticks div.sel { background: var(--accent2); border-color: var(--accent2); }
+
+  .step-readout { font-family: var(--font-mono); font-size: 11px; color: var(--accent2); letter-spacing: 1px; margin: 10px 0; }
+  .play-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .play-btn { padding: 6px 14px; border-radius: 2px; border: 1px solid var(--accent2); background: transparent; color: var(--accent2); font-family: var(--font-mono); font-size: 11px; letter-spacing: 1px; cursor: pointer; }
+  .play-btn.active { background: var(--accent2); color: #001a10; }
 
   .controls-panel { border-top: 1px solid var(--border); padding-top: 1rem; margin-top: .5rem; }
+
   .knobs-row { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 1rem; }
   .knob-group { display: flex; flex-direction: column; align-items: center; gap: 5px; }
   .knob { width: 56px; height: 56px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface2); display: flex; align-items: center; justify-content: center; position: relative; }
@@ -85,7 +95,6 @@
   .fx-btn.bad { border-color: var(--accent3); color: var(--accent3); }
   .fx-btn.bad.active { background: var(--accent3); color: #fff; }
 
-  .btn-row { display: flex; gap: 6px; margin-bottom: 1rem; flex-wrap: wrap; }
   .btn { padding: 7px 16px; border-radius: 2px; border: 1px solid var(--border); background: transparent; color: var(--text); font-family: var(--font-mono); font-size: 11px; cursor: pointer; letter-spacing: 1px; transition: all .1s; }
   .btn:hover { border-color: var(--accent); color: var(--accent); }
   .btn.primary { border-color: var(--accent); color: var(--accent); }
@@ -95,7 +104,6 @@
   .songs-title { font-family: var(--font-mono); font-size: 11px; color: var(--accent); letter-spacing: 2px; margin-bottom: .75rem; }
   .songs-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: .75rem; }
   .song-name-input { background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: var(--font-mono); font-size: 11px; padding: 6px 10px; border-radius: 2px; flex: 1; min-width: 140px; }
-  .song-name-input::placeholder { color: var(--text2); }
   .songs-list { display: flex; flex-direction: column; gap: 6px; }
   .song-item { display: flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 3px; padding: 8px 12px; flex-wrap: wrap; cursor: pointer; }
   .song-item-name { font-family: var(--font-mono); font-size: 11px; color: var(--text); flex: 1; min-width: 100px; }
@@ -118,7 +126,6 @@
     .knobs-row { gap: 14px; }
     .knob { width: 48px; height: 48px; }
     .theme-label { display: none; }
-    .step { height: 16px; }
   }
 </style>
 </head>
@@ -176,19 +183,28 @@
     <div class="step-section">
       <div class="daytabs" id="dayTabs"></div>
 
-      <div class="step-track-wrap">
-        <div class="step-track-label">TEMPERATURE °C</div>
-        <div class="step-row" id="tempSteps" style="grid-template-columns:repeat(24,1fr)"></div>
+      <div class="play-row">
+        <button class="play-btn" id="playBtn" onclick="togglePlay()">▶ PLAY 24H</button>
+        <span class="step-readout" id="stepReadout" style="margin:0">-- · -- · -- · --</span>
       </div>
-      <div class="step-track-wrap">
-        <div class="step-track-label">PRECIPITATION %</div>
-        <div class="step-row" id="rainSteps" style="grid-template-columns:repeat(24,1fr)"></div>
+
+      <div class="gauge-wrap">
+        <div class="gauge-label-row"><span class="name">TEMPERATURE °C</span><span id="tempMinMax">MIN -- · MAX --</span></div>
+        <div class="gauge-track temp"><div class="gauge-marker" id="tempMarker" style="left:0%"></div></div>
+        <div class="gauge-ticks" id="tempTicks"></div>
       </div>
-      <div class="step-track-wrap">
-        <div class="step-track-label">HUMIDITY %</div>
-        <div class="step-row" id="humSteps" style="grid-template-columns:repeat(24,1fr)"></div>
+
+      <div class="gauge-wrap">
+        <div class="gauge-label-row"><span class="name">PRECIPITATION %</span><span id="rainMinMax">MIN -- · MAX --</span></div>
+        <div class="gauge-track rain"><div class="gauge-marker" id="rainMarker" style="left:0%"></div></div>
+        <div class="gauge-ticks" id="rainTicks"></div>
       </div>
-      <div class="step-readout" id="stepReadout">-- · -- · -- · --</div>
+
+      <div class="gauge-wrap">
+        <div class="gauge-label-row"><span class="name">HUMIDITY %</span><span id="humMinMax">MIN -- · MAX --</span></div>
+        <div class="gauge-track hum"><div class="gauge-marker" id="humMarker" style="left:0%"></div></div>
+        <div class="gauge-ticks" id="humTicks"></div>
+      </div>
     </div>
 
     <div class="controls-panel">
@@ -296,12 +312,12 @@
 <script>
 // ═══════════════ THEMES ═══════════════
 const THEMES = [
-  { name:'Cyan Night',  dot:'#5bc8e8', vars:{'--bg':'#0a0e14','--surface':'#111820','--surface2':'#1a2330','--border':'#1e3040','--accent':'#5bc8e8','--accent2':'#00ff88','--accent3':'#ff6b6b','--text':'#c8dce8','--text2':'#4a7090','--screen-bg':'#000d14','--screen-text':'#00d4ff','--screen-dim':'#003355','--pad':'#5bc8e8','--pad-text':'#001a28','--step-on':'#5bc8e8','--step-off':'#1a2330','--step-cur':'#00ff88'}},
-  { name:'Purple Haze', dot:'#b06ef3', vars:{'--bg':'#0d0814','--surface':'#160e20','--surface2':'#1f1530','--border':'#2d1f45','--accent':'#b06ef3','--accent2':'#f06edf','--accent3':'#ff6b6b','--text':'#d8c8f0','--text2':'#5a3a80','--screen-bg':'#08040f','--screen-text':'#c87fff','--screen-dim':'#2a0a50','--pad':'#b06ef3','--pad-text':'#0d0814','--step-on':'#b06ef3','--step-off':'#1f1530','--step-cur':'#f06edf'}},
-  { name:'Sunset',      dot:'#ff8c42', vars:{'--bg':'#14080a','--surface':'#201010','--surface2':'#301818','--border':'#451f1f','--accent':'#ff8c42','--accent2':'#ffd166','--accent3':'#ef476f','--text':'#f0d8c8','--text2':'#804030','--screen-bg':'#0f0508','--screen-text':'#ff8c42','--screen-dim':'#500f00','--pad':'#ff8c42','--pad-text':'#14080a','--step-on':'#ff8c42','--step-off':'#301818','--step-cur':'#ffd166'}},
-  { name:'Ice',         dot:'#a8d8ea', vars:{'--bg':'#f0f6fa','--surface':'#e4eef5','--surface2':'#d0e4f0','--border':'#b0ccde','--accent':'#1e7fb5','--accent2':'#16a085','--accent3':'#e74c3c','--text':'#1a3a4a','--text2':'#5a8aaa','--screen-bg':'#0a2030','--screen-text':'#5bc8e8','--screen-dim':'#0a3050','--pad':'#1e7fb5','--pad-text':'#f0f6fa','--step-on':'#1e7fb5','--step-off':'#d0e4f0','--step-cur':'#16a085'}},
-  { name:'Matrix',      dot:'#00ff41', vars:{'--bg':'#000000','--surface':'#030f03','--surface2':'#071807','--border':'#0a280a','--accent':'#00ff41','--accent2':'#00cc33','--accent3':'#ff0000','--text':'#a0ffb0','--text2':'#1a5a1a','--screen-bg':'#000000','--screen-text':'#00ff41','--screen-dim':'#003300','--pad':'#00ff41','--pad-text':'#000000','--step-on':'#00ff41','--step-off':'#071807','--step-cur':'#00cc33'}},
-  { name:'Pink Wave',   dot:'#ff6eb4', vars:{'--bg':'#140a12','--surface':'#201020','--surface2':'#2e1530','--border':'#4a1a45','--accent':'#ff6eb4','--accent2':'#ff9de2','--accent3':'#ff3860','--text':'#f0c8e8','--text2':'#7a3a70','--screen-bg':'#0d0510','--screen-text':'#ff6eb4','--screen-dim':'#4a0a35','--pad':'#ff6eb4','--pad-text':'#140a12','--step-on':'#ff6eb4','--step-off':'#2e1530','--step-cur':'#ff9de2'}},
+  { name:'Cyan Night',  dot:'#5bc8e8', vars:{'--bg':'#0a0e14','--surface':'#111820','--surface2':'#1a2330','--border':'#1e3040','--accent':'#5bc8e8','--accent2':'#00ff88','--accent3':'#ff6b6b','--text':'#c8dce8','--text2':'#4a7090','--screen-bg':'#000d14','--screen-text':'#00d4ff','--screen-dim':'#003355','--pad':'#5bc8e8','--pad-text':'#001a28'}},
+  { name:'Purple Haze', dot:'#b06ef3', vars:{'--bg':'#0d0814','--surface':'#160e20','--surface2':'#1f1530','--border':'#2d1f45','--accent':'#b06ef3','--accent2':'#f06edf','--accent3':'#ff6b6b','--text':'#d8c8f0','--text2':'#5a3a80','--screen-bg':'#08040f','--screen-text':'#c87fff','--screen-dim':'#2a0a50','--pad':'#b06ef3','--pad-text':'#0d0814'}},
+  { name:'Sunset',      dot:'#ff8c42', vars:{'--bg':'#14080a','--surface':'#201010','--surface2':'#301818','--border':'#451f1f','--accent':'#ff8c42','--accent2':'#ffd166','--accent3':'#ef476f','--text':'#f0d8c8','--text2':'#804030','--screen-bg':'#0f0508','--screen-text':'#ff8c42','--screen-dim':'#500f00','--pad':'#ff8c42','--pad-text':'#14080a'}},
+  { name:'Ice',         dot:'#a8d8ea', vars:{'--bg':'#f0f6fa','--surface':'#e4eef5','--surface2':'#d0e4f0','--border':'#b0ccde','--accent':'#1e7fb5','--accent2':'#16a085','--accent3':'#e74c3c','--text':'#1a3a4a','--text2':'#5a8aaa','--screen-bg':'#0a2030','--screen-text':'#5bc8e8','--screen-dim':'#0a3050','--pad':'#1e7fb5','--pad-text':'#f0f6fa'}},
+  { name:'Matrix',      dot:'#00ff41', vars:{'--bg':'#000000','--surface':'#030f03','--surface2':'#071807','--border':'#0a280a','--accent':'#00ff41','--accent2':'#00cc33','--accent3':'#ff0000','--text':'#a0ffb0','--text2':'#1a5a1a','--screen-bg':'#000000','--screen-text':'#00ff41','--screen-dim':'#003300','--pad':'#00ff41','--pad-text':'#000000'}},
+  { name:'Pink Wave',   dot:'#ff6eb4', vars:{'--bg':'#140a12','--surface':'#201020','--surface2':'#2e1530','--border':'#4a1a45','--accent':'#ff6eb4','--accent2':'#ff9de2','--accent3':'#ff3860','--text':'#f0c8e8','--text2':'#7a3a70','--screen-bg':'#0d0510','--screen-text':'#ff6eb4','--screen-dim':'#4a0a35','--pad':'#ff6eb4','--pad-text':'#140a12'}},
 ];
 let activeTheme = 0;
 function applyTheme(idx) {
@@ -340,6 +356,7 @@ renderTabs();
 // ═══════════════ WEATHER LOGIC ═══════════════
 let LAT=null, LON=null, LOCNAME='', LOCTZ='UTC';
 let HOURLY=null, BASEIDX=0, selectedDay=0, selectedStep=0;
+let playing=false, playTimer=null;
 const MODELS=[
   {id:'ecmwf_ifs025',label:'ECMWF'},
   {id:'gfs_seamless',label:'GFS'},
@@ -389,6 +406,7 @@ function nearestIndex(times, target){
 
 async function loadAll(){
   try{
+    stopPlay();
     await loadWeather();
     await loadAir();
     await loadWaves();
@@ -399,7 +417,6 @@ async function loadAll(){
 }
 
 async function loadWeather(){
-  // Call 1: simple single-source (no models suffix issue) — current + daily + 8-day hourly
   const url1=`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,apparent_temperature,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m,cloud_cover,precipitation&hourly=temperature_2m,relative_humidity_2m,precipitation_probability&daily=sunrise,sunset,daylight_duration&timezone=auto&forecast_days=8`;
   const d1=await (await fetch(url1)).json();
   LOCTZ = d1.timezone || 'UTC';
@@ -429,9 +446,9 @@ async function loadWeather(){
   BASEIDX = nearestIndex(d1.hourly.time, d1.current.time);
   selectedDay = 0; selectedStep = 0;
   renderDayTabs(d1.daily.time);
-  renderTimelines();
+  renderTicks();
+  renderGauges();
 
-  // Call 2: multi-model comparison + UV/Visibility average
   const models=MODELS.map(m=>m.id).join(',');
   const url2=`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=temperature_2m,relative_humidity_2m,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index,visibility,cloud_cover&models=${models}&timezone=auto&forecast_days=2`;
   const d2=await (await fetch(url2)).json();
@@ -488,40 +505,75 @@ function renderDayTabs(dailyTimes){
   ).join('');
 }
 function switchDay(d){
+  stopPlay();
   selectedDay=d; selectedStep=0;
   document.querySelectorAll('#dayTabs button').forEach((b,i)=>b.classList.toggle('active',i===d));
-  renderTimelines();
+  renderTicks(); renderGauges();
 }
-function selectStep(i){ selectedStep=i; renderTimelines(); }
+function selectStep(i){ stopPlay(); selectedStep=i; renderGauges(); }
 
-function renderTimelines(){
-  if(!HOURLY)return;
+function dayArr(field){
   const offsetBase = BASEIDX + selectedDay*24;
-  let tempCells='',rainCells='',humCells='';
-  for(let i=0;i<24;i++){
-    const hi=offsetBase+i;
-    const temp=HOURLY.temperature_2m[hi];
-    const rain=HOURLY.precipitation_probability[hi];
-    const hum=HOURLY.relative_humidity_2m[hi];
-    const sel=(i===selectedStep)?' current':'';
-    const tPct=temp!=null?Math.max(0,Math.min(1,(temp+10)/40)):0.5;
-    tempCells+=`<div class="step${sel}" onclick="selectStep(${i})" title="${temp!=null?temp.toFixed(1)+'°C':'--'}" style="background:hsl(${200-tPct*200},70%,55%)"></div>`;
-    const rPct=rain!=null?rain/100:0;
-    rainCells+=`<div class="step${sel}" onclick="selectStep(${i})" title="${rain!=null?rain+'%':'--'}" style="background:rgba(91,200,232,${0.15+rPct*0.85})"></div>`;
-    const hPct=hum!=null?hum/100:0.5;
-    humCells+=`<div class="step${sel}" onclick="selectStep(${i})" title="${hum!=null?hum+'%':'--'}" style="background:rgba(0,255,136,${0.15+hPct*0.85})"></div>`;
-  }
-  document.getElementById('tempSteps').innerHTML=tempCells;
-  document.getElementById('rainSteps').innerHTML=rainCells;
-  document.getElementById('humSteps').innerHTML=humCells;
-  updateReadout(offsetBase);
+  return HOURLY[field].slice(offsetBase, offsetBase+24);
 }
-function updateReadout(offsetBase){
-  const hi=offsetBase+selectedStep;
-  const timeStr = HOURLY.time[hi] ? HOURLY.time[hi].slice(11,16) : '--';
-  const temp=HOURLY.temperature_2m[hi], rain=HOURLY.precipitation_probability[hi], hum=HOURLY.relative_humidity_2m[hi];
+function minMax(arr){
+  const vals=arr.filter(v=>v!=null);
+  if(!vals.length)return{min:0,max:1};
+  return{min:Math.min(...vals),max:Math.max(...vals)};
+}
+
+function renderTicks(){
+  ['tempTicks','rainTicks','humTicks'].forEach(id=>{
+    document.getElementById(id).innerHTML=Array.from({length:24}).map((_,i)=>
+      `<div class="${i===selectedStep?'sel':''}" onclick="selectStep(${i})"></div>`
+    ).join('');
+  });
+}
+
+function renderGauges(){
+  if(!HOURLY)return;
+  const temps=dayArr('temperature_2m'), rains=dayArr('precipitation_probability'), hums=dayArr('relative_humidity_2m');
+  const tMM=minMax(temps), rMM=minMax(rains), hMM=minMax(hums);
+
+  document.getElementById('tempMinMax').textContent=`MIN ${tMM.min.toFixed(1)}° · MAX ${tMM.max.toFixed(1)}°`;
+  document.getElementById('rainMinMax').textContent=`MIN ${Math.round(rMM.min)}% · MAX ${Math.round(rMM.max)}%`;
+  document.getElementById('humMinMax').textContent=`MIN ${Math.round(hMM.min)}% · MAX ${Math.round(hMM.max)}%`;
+
+  const tPct = tMM.max>tMM.min ? (temps[selectedStep]-tMM.min)/(tMM.max-tMM.min)*100 : 50;
+  const rPct = rMM.max>rMM.min ? (rains[selectedStep]-rMM.min)/(rMM.max-rMM.min)*100 : 50;
+  const hPct = hMM.max>hMM.min ? (hums[selectedStep]-hMM.min)/(hMM.max-hMM.min)*100 : 50;
+
+  document.getElementById('tempMarker').style.left=Math.max(1,Math.min(99,tPct))+'%';
+  document.getElementById('rainMarker').style.left=Math.max(1,Math.min(99,rPct))+'%';
+  document.getElementById('humMarker').style.left=Math.max(1,Math.min(99,hPct))+'%';
+
+  document.querySelectorAll('#tempTicks div, #rainTicks div, #humTicks div').forEach(el=>el.classList.remove('sel'));
+  ['tempTicks','rainTicks','humTicks'].forEach(id=>{
+    const el=document.getElementById(id).children[selectedStep];
+    if(el)el.classList.add('sel');
+  });
+
+  const offsetBase = BASEIDX + selectedDay*24;
+  const timeStr = HOURLY.time[offsetBase+selectedStep] ? HOURLY.time[offsetBase+selectedStep].slice(11,16) : '--';
   document.getElementById('stepReadout').textContent =
-    `${timeStr} · ${temp!=null?temp.toFixed(1)+'°C':'--'} · ${rain!=null?rain+'% rain':'--'} · ${hum!=null?hum+'% humidity':'--'}`;
+    `${timeStr} · ${temps[selectedStep]!=null?temps[selectedStep].toFixed(1)+'°C':'--'} · ${rains[selectedStep]!=null?rains[selectedStep]+'% rain':'--'} · ${hums[selectedStep]!=null?hums[selectedStep]+'% humidity':'--'}`;
+}
+
+function togglePlay(){ playing ? stopPlay() : startPlay(); }
+function startPlay(){
+  playing=true;
+  document.getElementById('playBtn').textContent='■ STOP';
+  document.getElementById('playBtn').classList.add('active');
+  playTimer=setInterval(()=>{
+    selectedStep=(selectedStep+1)%24;
+    renderGauges();
+  },700);
+}
+function stopPlay(){
+  playing=false;
+  clearInterval(playTimer);
+  const b=document.getElementById('playBtn');
+  if(b){b.textContent='▶ PLAY 24H';b.classList.remove('active');}
 }
 
 function setKnob(dotId,valId,pct,text){
