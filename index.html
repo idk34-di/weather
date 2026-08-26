@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VERSION 3.5</title>
+<title>VERSION 5.0</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600&display=swap');
 
@@ -139,6 +139,9 @@
     <div id="theme-dots" style="display:flex;gap:6px;align-items:center"></div>
   </div>
   <div class="header-right">
+    <span id="contatore" style="font-family:var(--font-mono);font-size:11px;color:var(--text2);margin-right:6px;">👁 …</span>
+    <button id="login-btn" class="btn" onclick="accedi()" style="margin-right:6px;">ACCEDI</button>
+    <span id="user-info" style="display:none;color:var(--accent2);cursor:pointer;font-family:var(--font-mono);font-size:11px;margin-right:6px;" onclick="esci()"></span>
     <div class="live-indicator" id="live-dot" title="Live data"></div>
   </div>
 </header>
@@ -743,7 +746,7 @@ function updateMap(overlay){
 // ═══════════════ SAVED LOCATIONS ═══════════════
 let savedLocations=[];
 function loadSavedFromStorage(){try{const r=localStorage.getItem('weatherLocations');if(r)savedLocations=JSON.parse(r);}catch(e){savedLocations=[];}}
-function saveSavedToStorage(){try{localStorage.setItem('weatherLocations',JSON.stringify(savedLocations));}catch(e){showToast('Storage full!',true);}}
+function saveSavedToStorage(){try{localStorage.setItem('weatherLocations',JSON.stringify(savedLocations));}catch(e){showToast('Storage full!',true);}salvaDatiUtente();}
 function saveLocation(){
   if(!LAT){showToast('Search a location first',true);return;}
   savedLocations.push({name:LOCNAME,lat:LAT,lon:LON,savedAt:new Date().toISOString()});
@@ -762,6 +765,88 @@ function renderSaved(){
 loadSavedFromStorage();
 renderSaved();
 </script>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyA0-O7pTF_M_DmJ2mkvlGqkJuoD5Lc_WjE",
+  authDomain: "workspace-5e87a.firebaseapp.com",
+  projectId: "workspace-5e87a"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+async function incrementaContatore() {
+  try {
+    const ref = db.collection("stats").doc("visite_weather");
+    await db.runTransaction(async (t) => {
+      const doc = await t.get(ref);
+      const attuale = doc.exists ? doc.data().count : 0;
+      t.set(ref, { count: attuale + 1 });
+    });
+    const doc = await ref.get();
+    document.getElementById("contatore").textContent = "👁 " + doc.data().count;
+  } catch (e) { console.error("Errore contatore:", e); }
+}
+incrementaContatore();
+
+function accedi() {
+  auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e => {
+    console.error("Errore login:", e);
+    showToast('LOGIN FAILED', true);
+  });
+}
+function esci() { auth.signOut(); }
+
+let datiRemotiCaricati = false;
+
+auth.onAuthStateChanged(async (user) => {
+  document.getElementById("login-btn").style.display = user ? "none" : "";
+  document.getElementById("user-info").style.display = user ? "" : "none";
+  if (user) {
+    document.getElementById("user-info").textContent = user.displayName || user.email;
+    await caricaDatiUtente(user.uid);
+  } else {
+    datiRemotiCaricati = false;
+  }
+});
+
+async function caricaDatiUtente(uid) {
+  try {
+    const doc = await db.collection("utenti").doc(uid).get();
+    if (doc.exists) {
+      const dati = doc.data();
+      savedLocations = dati.locations || [];
+      localStorage.setItem('weatherLocations', JSON.stringify(savedLocations));
+    } else {
+      datiRemotiCaricati = true;
+      await salvaDatiUtente(true);
+    }
+    datiRemotiCaricati = true;
+    renderSaved();
+    showToast('DATI SINCRONIZZATI');
+  } catch (e) {
+    console.error("Errore caricamento dati:", e);
+    showToast('SYNC FAILED', true);
+  }
+}
+
+let salvataggioTimer = null;
+function salvaDatiUtente(immediato) {
+  const user = auth.currentUser;
+  if (!user || !datiRemotiCaricati) return;
+  const esegui = () => {
+    db.collection("utenti").doc(user.uid).set({ locations: savedLocations }, { merge: true })
+      .catch(e => console.error("Errore salvataggio:", e));
+  };
+  if (immediato) { esegui(); return; }
+  clearTimeout(salvataggioTimer);
+  salvataggioTimer = setTimeout(esegui, 800);
+}
+</script>
 </body>
 </html>
-© 2026 Ismaele. All rights reserved. Created: 12-08-2026 | Last Update: 17-08-2026
+© 2026 Ismaele. All rights reserved. Created: 12-08-2026 | Last Update: 26-08-2026
