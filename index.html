@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VERSION 5.0</title>
+<title>VERSION 5.1</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600&display=swap');
 
@@ -19,7 +19,9 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: var(--font-ui); min-height: 100vh; overflow-x: hidden; transition: background .4s, color .4s; }
 
-  header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); background: var(--surface); }
+  header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); background: var(--surface); position: relative; }
+  .header-center { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); font-family: var(--font-mono); font-size: 13px; letter-spacing: 4px; color: var(--accent); text-decoration: none; cursor: pointer; transition: color .15s; white-space: nowrap; }
+  .header-center:hover { color: var(--accent2); }
   .header-right { display: flex; align-items: center; gap: 12px; }
   .live-indicator { width: 8px; height: 8px; border-radius: 50%; background: var(--accent2); opacity: 0; transition: opacity .3s; }
   .live-indicator.active { opacity: 1; animation: blink 1s infinite; }
@@ -126,6 +128,7 @@
     .knobs-row { gap: 14px; }
     .knob { width: 48px; height: 48px; }
     .theme-label { display: none; }
+    .header-center { font-size: 10px; letter-spacing: 2px; }
   }
 </style>
 </head>
@@ -138,6 +141,7 @@
     <span class="theme-label">THEME</span>
     <div id="theme-dots" style="display:flex;gap:6px;align-items:center"></div>
   </div>
+  <a class="header-center" href="https://idk34-di.github.io/" target="_blank" rel="noopener">WEATHER</a>
   <div class="header-right">
     <span id="contatore" style="font-family:var(--font-mono);font-size:11px;color:var(--text2);margin-right:6px;">👁 …</span>
     <button id="login-btn" class="btn" onclick="accedi()" style="margin-right:6px;">ACCEDI</button>
@@ -779,9 +783,16 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+// ---- Monthly-resetting visit counter ----
+// Doc id now includes the year-month, so a new month = a new doc = counter starts fresh automatically.
+function monthKey(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+}
+
 async function incrementaContatore() {
   try {
-    const ref = db.collection("stats").doc("visite_weather");
+    const ref = db.collection("stats").doc("visite_weather_" + monthKey());
     await db.runTransaction(async (t) => {
       const doc = await t.get(ref);
       const attuale = doc.exists ? doc.data().count : 0;
@@ -849,4 +860,4 @@ function salvaDatiUtente(immediato) {
 </script>
 </body>
 </html>
-© 2026 Ismaele. All rights reserved. Created: 12-08-2026 | Last Update: 26-08-2026
+© 2026 Ismaele. All rights reserved. Created: 12-08-2026 | Last Update: 29-08-2026
